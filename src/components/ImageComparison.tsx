@@ -8,16 +8,18 @@ interface ImageComparisonProps {
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
+        const containerWidth = containerRef.current?.clientWidth || 0;
+        const scale = containerWidth / img.width;
         setDimensions({
-          width: img.width,
-          height: img.height
+          width: containerWidth,
+          height: img.height * scale
         });
       };
       img.src = originalImage;
@@ -26,25 +28,27 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   
   if (!originalImage) return null;
 
-  // Ajusta o SVG para usar as dimensões da imagem original
+  // Ajusta o SVG para usar as dimensões corretas e manter a proporção
   const adjustedVectorImage = vectorImage.replace(
-    /<svg/, 
-    `<svg preserveAspectRatio="xMidYMid meet" width="${dimensions.width}" height="${dimensions.height}"`
+    /<svg[^>]*>/,
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
   return (
-    <div className="relative w-full aspect-[4/3] border rounded-lg overflow-hidden bg-white">
-      <div className="absolute inset-0 flex items-center justify-center">
+    <div 
+      ref={containerRef}
+      className="relative w-full border rounded-lg overflow-hidden bg-white"
+      style={{ height: dimensions.height }}
+    >
+      <div className="absolute inset-0">
         <div 
-          className="w-full h-full flex items-center justify-center"
-          dangerouslySetInnerHTML={{ 
-            __html: adjustedVectorImage
-          }}
+          className="w-full h-full"
+          dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
         />
       </div>
       
       <div 
-        className="absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
           transition: 'clip-path 0.1s ease-out'
@@ -52,8 +56,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       >
         <img 
           src={originalImage} 
-          alt="Original" 
-          className="max-w-full max-h-full object-contain"
+          alt="Original"
+          className="w-full h-full object-contain"
         />
       </div>
 
