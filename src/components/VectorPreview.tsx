@@ -5,7 +5,6 @@ import Raphael from 'raphael';
 import type { RaphaelPaper } from 'raphael';
 import DownloadButtons from './vector-preview/DownloadButtons';
 import PreviewPanel from './vector-preview/PreviewPanel';
-import { optimizeSVG, convertSVGtoPNG } from '@/utils/imageProcessing';
 
 interface VectorPreviewProps {
   svgContent: string;
@@ -75,13 +74,12 @@ const VectorPreview = ({
         throw new Error('SVG data not found');
       }
 
-      const optimizedSvg = await optimizeSVG(svgData);
       let blob: Blob;
       let filename: string;
 
       switch (format) {
         case 'svg':
-          blob = new Blob([optimizedSvg], { type: 'image/svg+xml' });
+          blob = new Blob([svgData], { type: 'image/svg+xml' });
           filename = `vector-${colorMode}.svg`;
           break;
         case 'pdf':
