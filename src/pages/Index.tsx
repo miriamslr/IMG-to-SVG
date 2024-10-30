@@ -5,12 +5,11 @@ import VectorControls from '@/components/VectorControls';
 import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
-import { Wand2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
-import * as potrace from 'potrace';
-import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { extractDominantColors, mapColorsToSvgPaths } from '@/utils/colorAnalysis';
+import { vectorize, ColorMode, Hierarchical, PathSimplifyMode } from '@neplex/vectorizer';
+import { ColorMode as AppColorMode } from '@/types/vector';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -23,7 +22,7 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    colorMode: 'color' as ColorMode,
+    colorMode: 'color' as AppColorMode,
     quality: 1,
     turdSize: 2,
     alphaMax: 1,
@@ -54,53 +53,39 @@ const Index = () => {
         .filter(text => text.length > 0);
 
       // Image to Vector Processing
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const imageUrl = reader.result as string;
-        let dominantColors: string[] = [];
-        
-        if (options.colorMode === 'color') {
-          dominantColors = await extractDominantColors(imageUrl, 8);
-        }
+      const buffer = await file.arrayBuffer();
+      const vectorizerColorMode = options.colorMode === 'color' 
+        ? ColorMode.Color 
+        : options.colorMode === 'grayscale' 
+          ? ColorMode.Grayscale 
+          : ColorMode.Binary;
 
-        potrace.trace(imageUrl, {
-          turdSize: options.turdSize,
-          alphaMax: options.alphaMax,
-          threshold: options.threshold,
-          optTolerance: options.optTolerance,
-          pathomit: options.pathomit,
-        }, async (err: Error | null, svg: string) => {
-          if (err) throw err;
-          
-          let processedSvg = svg;
-          
-          switch (options.colorMode) {
-            case 'color':
-              processedSvg = await mapColorsToSvgPaths(svg, dominantColors);
-              break;
-            case 'grayscale':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
-              break;
-            case 'blackwhite':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
-              break;
-          }
-          
-          const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
-            Math.random() > 0.5
-          );
-          
-          setVectorResult({
-            svg: processedSvg,
-            text: recognizedText,
-            fonts: detectedFonts
-          });
-          
-          setProcessing(false);
-        });
-      };
-      reader.readAsDataURL(file);
+      const svg = await vectorize(Buffer.from(buffer), {
+        colorMode: vectorizerColorMode,
+        colorPrecision: Math.floor(options.quality * 8),
+        filterSpeckle: Math.floor(options.turdSize),
+        spliceThreshold: Math.floor(options.alphaMax * 45),
+        cornerThreshold: Math.floor(options.cornerThreshold),
+        hierarchical: Hierarchical.Stacked,
+        mode: PathSimplifyMode.Spline,
+        layerDifference: Math.floor(options.optimizePaths * 6),
+        lengthThreshold: Math.floor(options.lineThreshold * 4),
+        maxIterations: Math.floor(options.pathomit)
+      });
+
+      const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
+        Math.random() > 0.5
+      );
+      
+      setVectorResult({
+        svg,
+        text: recognizedText,
+        fonts: detectedFonts
+      });
+      
+      setProcessing(false);
     } catch (error) {
+      console.error('Error processing image:', error);
       toast({
         title: "Erro no processamento",
         description: "Ocorreu um erro ao processar sua imagem.",
