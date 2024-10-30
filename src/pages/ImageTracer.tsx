@@ -4,8 +4,6 @@ import VectorControls from '@/components/VectorControls';
 import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ColorMode } from '@/types/vector';
 import ImageTracer from 'imagetracerjs';
 
@@ -54,14 +52,33 @@ const ImageTracerPage = () => {
 
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           
-          ImageTracer.imageDataToSVG(imageData, (svgString: string) => {
-            setVectorResult({
-              svg: svgString,
-              text: [],
-              fonts: []
-            });
-            setProcessing(false);
+          // Configurações do ImageTracer
+          const tracerOptions = {
+            ltres: options.lineThreshold,
+            qtres: options.quality,
+            pathomit: options.pathomit,
+            colorsampling: options.colorMode === 'color' ? 1 : 0,
+            mincolorratio: 0,
+            colorquantcycles: 3,
+            scale: 1,
+            strokewidth: 1,
+            viewbox: true,
+            linefilter: true,
+            desc: false,
+            rightangleenhance: true,
+            pal: options.colorMode === 'blackwhite' ? [[0,0,0],[255,255,255]] : undefined
+          };
+
+          // Usando a API correta do ImageTracer
+          const tracer = new ImageTracer();
+          const svgString = tracer.imagedataToSVG(imageData, tracerOptions);
+
+          setVectorResult({
+            svg: svgString,
+            text: [],
+            fonts: []
           });
+          setProcessing(false);
         };
         img.src = reader.result as string;
       };
