@@ -12,8 +12,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   if (!originalImage) return null;
 
   return (
-    <div className="relative w-full aspect-[4/3] border rounded-lg overflow-hidden">
-      <div className="absolute inset-0">
+    <div className="relative w-full aspect-[4/3] border rounded-lg overflow-hidden bg-white">
+      <div className="absolute inset-0 flex items-center justify-center">
         <img 
           src={originalImage} 
           alt="Original" 
@@ -22,14 +22,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       </div>
       
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 flex items-center justify-center"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
           transition: 'clip-path 0.1s ease-out'
         }}
       >
         <div 
-          className="w-full h-full"
+          className="w-full h-full flex items-center justify-center"
           dangerouslySetInnerHTML={{ __html: vectorImage }}
         />
       </div>
