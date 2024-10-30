@@ -4,6 +4,7 @@ import { Download } from 'lucide-react';
 import { ColorMode } from '@/types/vector';
 import { toast } from '@/components/ui/use-toast';
 import Raphael from 'raphael';
+import { Paper } from 'raphael';
 
 interface VectorPreviewProps {
   svgContent: string;
@@ -21,7 +22,7 @@ const VectorPreview = ({
   originalImage 
 }: VectorPreviewProps) => {
   const vectorRef = useRef<HTMLDivElement>(null);
-  const raphaelRef = useRef<RaphaelPaper | null>(null);
+  const raphaelRef = useRef<Paper | null>(null);
 
   useEffect(() => {
     if (vectorRef.current && svgContent) {
