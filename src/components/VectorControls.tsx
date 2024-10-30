@@ -2,48 +2,51 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ColorMode, VectorOptions } from '@/types/vector';
+import { ColorMode } from '@/types/vector';
 import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
 
-type ExtendedVectorOptions = VectorOptions & {
-  turdSize: number;
-  alphaMax: number;
-  threshold: number;
-  pathomit: number;
-  lineThreshold: number;
-  cornerThreshold: number;
-  smoothing: number;
-  optimizePaths: number;
-};
-
 interface VectorControlsProps {
-  options: ExtendedVectorOptions;
-  onOptionsChange: (newOptions: Partial<ExtendedVectorOptions>) => void;
+  options: {
+    colorMode: ColorMode;
+    quality: number;
+    turdSize: number;
+    alphaMax: number;
+    threshold: number;
+    optTolerance: number;
+    pathomit: number;
+    lineThreshold: number;
+    cornerThreshold: number;
+    smoothing: number;
+    optimizePaths: number;
+  };
+  onOptionsChange: (newOptions: Partial<typeof options>) => void;
 }
 
 const ControlTooltip = ({ tip, children }: { tip: string; children: React.ReactNode }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <div className="flex items-center gap-2">
-        {children}
-        <HelpCircle className="w-4 h-4 text-gray-400" />
-      </div>
-    </TooltipTrigger>
-    <TooltipContent>
-      <p>{tip}</p>
-    </TooltipContent>
-  </Tooltip>
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-2">
+          {children}
+          <HelpCircle className="w-4 h-4 text-gray-400" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{tip}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 );
 
 const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
   return (
     <Card className="p-4">
       <h3 className="text-lg font-semibold mb-4">Opções de Conversão</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <ControlTooltip tip="Define o tamanho mínimo dos objetos que serão detectados. Valores maiores removem detalhes pequenos.">
+          <ControlTooltip tip="Define o tamanho mínimo dos objetos que serão detectados">
             <Label className="mb-2 block">Tamanho Mínimo</Label>
           </ControlTooltip>
           <Slider
@@ -57,7 +60,7 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
         </div>
 
         <div>
-          <ControlTooltip tip="Controla a suavidade das curvas. Valores maiores geram curvas mais suaves.">
+          <ControlTooltip tip="Controla a suavidade das curvas">
             <Label className="mb-2 block">Suavidade</Label>
           </ControlTooltip>
           <Slider
@@ -71,7 +74,7 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
         </div>
 
         <div>
-          <ControlTooltip tip="Define o limite entre preto e branco. Ajuste para melhorar a detecção de bordas.">
+          <ControlTooltip tip="Define o limite entre preto e branco">
             <Label className="mb-2 block">Contraste</Label>
           </ControlTooltip>
           <Slider
@@ -85,7 +88,7 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
         </div>
 
         <div>
-          <ControlTooltip tip="Controla a simplificação do traçado. Valores maiores geram vetores mais simples.">
+          <ControlTooltip tip="Controla a simplificação do traçado">
             <Label className="mb-2 block">Simplificação</Label>
           </ControlTooltip>
           <Slider
@@ -94,6 +97,90 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
             min={0}
             max={20}
             step={1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <ControlTooltip tip="Ajusta a qualidade geral da vetorização">
+            <Label className="mb-2 block">Qualidade</Label>
+          </ControlTooltip>
+          <Slider
+            value={[options.quality]}
+            onValueChange={([value]) => onOptionsChange({ quality: value })}
+            min={0}
+            max={1}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <ControlTooltip tip="Tolerância na otimização de curvas">
+            <Label className="mb-2 block">Tolerância</Label>
+          </ControlTooltip>
+          <Slider
+            value={[options.optTolerance]}
+            onValueChange={([value]) => onOptionsChange({ optTolerance: value })}
+            min={0}
+            max={1}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <ControlTooltip tip="Ajusta a detecção de linhas retas">
+            <Label className="mb-2 block">Limiar de Linha</Label>
+          </ControlTooltip>
+          <Slider
+            value={[options.lineThreshold]}
+            onValueChange={([value]) => onOptionsChange({ lineThreshold: value })}
+            min={0}
+            max={5}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <ControlTooltip tip="Ajusta a detecção de cantos">
+            <Label className="mb-2 block">Limiar de Canto</Label>
+          </ControlTooltip>
+          <Slider
+            value={[options.cornerThreshold]}
+            onValueChange={([value]) => onOptionsChange({ cornerThreshold: value })}
+            min={0}
+            max={180}
+            step={1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <ControlTooltip tip="Nível de suavização das curvas">
+            <Label className="mb-2 block">Suavização</Label>
+          </ControlTooltip>
+          <Slider
+            value={[options.smoothing]}
+            onValueChange={([value]) => onOptionsChange({ smoothing: value })}
+            min={0}
+            max={2}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <ControlTooltip tip="Nível de otimização dos caminhos">
+            <Label className="mb-2 block">Otimização</Label>
+          </ControlTooltip>
+          <Slider
+            value={[options.optimizePaths]}
+            onValueChange={([value]) => onOptionsChange({ optimizePaths: value })}
+            min={0}
+            max={2}
+            step={0.1}
             className="w-full"
           />
         </div>

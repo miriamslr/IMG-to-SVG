@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Wand2, AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
-import { ColorMode, VectorOptions } from '@/types/vector';
+import { ColorMode } from '@/types/vector';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -135,10 +135,10 @@ const Index = () => {
           <ImageUploader onImageSelect={handleImageSelect} />
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <Card className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Imagem Original</h3>
-                <div className="relative pb-[100%]">
+                <div className="relative aspect-square">
                   {imagePreview && (
                     <img 
                       src={imagePreview} 
@@ -151,7 +151,7 @@ const Index = () => {
               
               <Card className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({options.colorMode})</h3>
-                <div className="relative pb-[100%] bg-gray-50">
+                <div className="relative aspect-square bg-gray-50">
                   {vectorResult && (
                     <div 
                       className="absolute inset-0 w-full h-full flex items-center justify-center p-4"
