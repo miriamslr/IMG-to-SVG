@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import Tesseract from 'tesseract.js';
+import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
 import { ColorMode, VectorOptions } from '@/types/vector';
 
@@ -40,10 +40,7 @@ const Index = () => {
     });
 
     try {
-      const worker = await Tesseract.createWorker();
-      await worker.load();
-      await worker.loadLanguage('por');
-      await worker.initialize('por');
+      const worker = await Tesseract.createWorker('por');
       const result = await worker.recognize(selectedImage);
       await worker.terminate();
 
