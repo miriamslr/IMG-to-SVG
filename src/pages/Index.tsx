@@ -40,20 +40,21 @@ const Index = () => {
     });
 
     try {
-      // OCR Processing
       const result = await Tesseract.recognize(selectedImage, 'por');
       const recognizedText = result.data.paragraphs.map(p => p.text).filter(Boolean);
 
-      // Vector Processing with color options
       const reader = new FileReader();
       reader.onload = () => {
         const params: potrace.Params = {
           turdSize: 2,
           alphaMax: 1,
           optCurve: true,
-          threshold: options.colorMode === 'blackwhite' ? 128 : undefined,
+          threshold: options.colorMode === 'blackwhite' ? 128 : 100,
           blackOnWhite: true,
-          color: options.colorMode === 'grayscale' ? '#666666' : undefined,
+          color: options.colorMode === 'grayscale' ? '#666666' : '#000000',
+          background: options.colorMode === 'color' ? '#FFFFFF' : undefined,
+          fillStrategy: options.colorMode === 'color' ? 'dominant' : undefined,
+          rangeDistribution: options.colorMode === 'color' ? 'auto' : undefined,
         };
 
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
