@@ -47,6 +47,12 @@ export const processImageAdjustments = async (
     image.greyscale();
   }
 
-  // Return as base64
-  return await image.getBase64Async(Jimp.MIME_PNG);
+  // Convert to base64 using callback pattern
+  return new Promise((resolve, reject) => {
+    image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
+      if (err) reject(err);
+      const base64 = `data:image/png;base64,${buffer.toString('base64')}`;
+      resolve(base64);
+    });
+  });
 };
