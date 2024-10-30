@@ -8,6 +8,7 @@ import { Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
+import { Slider } from '@/components/ui/slider';
 import { ColorMode, VectorOptions } from '@/types/vector';
 
 const Index = () => {
@@ -51,17 +52,19 @@ const Index = () => {
       const reader = new FileReader();
       reader.onload = () => {
         const params: potrace.Params = {
-          turdSize: 2,
-          alphaMax: 1,
+          turdSize: Math.max(2, Math.floor(options.quality * 4)), // Ajusta o tamanho mínimo dos objetos
+          alphaMax: Math.min(1, 0.5 + options.quality * 0.5), // Ajusta a suavidade das curvas
           optCurve: true,
-          threshold: options.colorMode === 'blackwhite' ? 128 : 100,
+          threshold: options.colorMode === 'blackwhite' ? 
+            128 + (options.quality * 20) : // Ajusta o limiar para preto e branco
+            100 + (options.quality * 10),  // Ajusta o limiar para outros modos
           blackOnWhite: true,
           color: options.colorMode === 'grayscale' ? '#666666' : '#000000',
           background: options.colorMode === 'color' ? '#FFFFFF' : undefined,
           fillStrategy: options.colorMode === 'color' ? 'dominant' : undefined,
           rangeDistribution: options.colorMode === 'color' ? 'auto' : undefined,
-          optTolerance: 0.2,
-          pathomit: 8,
+          optTolerance: Math.max(0.1, 0.4 - options.quality * 0.3), // Ajusta a tolerância da otimização
+          pathomit: Math.max(4, 12 - Math.floor(options.quality * 8)), // Ajusta a simplificação do caminho
         };
 
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
@@ -113,26 +116,46 @@ const Index = () => {
           <div className="mt-8">
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Opções de Conversão</h3>
-              <RadioGroup
-                defaultValue={options.colorMode}
-                onValueChange={(value: ColorMode) => 
-                  setOptions(prev => ({ ...prev, colorMode: value }))
-                }
-                className="grid grid-cols-3 gap-4"
-              >
+              <div className="space-y-6">
                 <div>
-                  <RadioGroupItem value="color" id="color" />
-                  <Label htmlFor="color" className="ml-2">Colorido</Label>
+                  <Label className="mb-2 block">Qualidade do Vetor</Label>
+                  <Slider
+                    value={[options.quality]}
+                    onValueChange={([value]) => 
+                      setOptions(prev => ({ ...prev, quality: value }))
+                    }
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between mt-1 text-sm text-gray-500">
+                    <span>Rápido</span>
+                    <span>Alta Qualidade</span>
+                  </div>
                 </div>
-                <div>
-                  <RadioGroupItem value="grayscale" id="grayscale" />
-                  <Label htmlFor="grayscale" className="ml-2">Escala de Cinza</Label>
-                </div>
-                <div>
-                  <RadioGroupItem value="blackwhite" id="blackwhite" />
-                  <Label htmlFor="blackwhite" className="ml-2">Preto e Branco</Label>
-                </div>
-              </RadioGroup>
+
+                <RadioGroup
+                  defaultValue={options.colorMode}
+                  onValueChange={(value: ColorMode) => 
+                    setOptions(prev => ({ ...prev, colorMode: value }))
+                  }
+                  className="grid grid-cols-3 gap-4"
+                >
+                  <div>
+                    <RadioGroupItem value="color" id="color" />
+                    <Label htmlFor="color" className="ml-2">Colorido</Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="grayscale" id="grayscale" />
+                    <Label htmlFor="grayscale" className="ml-2">Escala de Cinza</Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="blackwhite" id="blackwhite" />
+                    <Label htmlFor="blackwhite" className="ml-2">Preto e Branco</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
 
             <Button
