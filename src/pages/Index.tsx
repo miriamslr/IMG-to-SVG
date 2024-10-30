@@ -109,9 +109,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
-      <div className="max-w-[1600px] mx-auto">
-        <div className="text-center mb-6">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      <div className="container mx-auto px-4 py-6 max-w-[1400px]">
+        <div className="text-center mb-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Conversor de Imagem para Vetor
           </h1>
@@ -120,7 +120,7 @@ const Index = () => {
           </p>
         </div>
 
-        <Alert className="mb-6">
+        <Alert className="mb-4 max-w-3xl mx-auto">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <ul className="list-disc list-inside space-y-1">
@@ -135,18 +135,22 @@ const Index = () => {
         {!selectedImage ? (
           <ImageUploader onImageSelect={handleImageSelect} />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6">
-            <div className="space-y-6">
-              <ImageComparison 
-                originalImage={imagePreview} 
-                vectorImage={vectorResult?.svg || ''}
-              />
-              <RecognitionResults
-                recognizedText={vectorResult?.text || []}
-                detectedFonts={vectorResult?.fonts || []}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr,350px] gap-4">
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <ImageComparison 
+                  originalImage={imagePreview} 
+                  vectorImage={vectorResult?.svg || ''}
+                />
+              </div>
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <RecognitionResults
+                  recognizedText={vectorResult?.text || []}
+                  detectedFonts={vectorResult?.fonts || []}
+                />
+              </div>
             </div>
-            <div>
+            <div className="lg:sticky lg:top-4 h-fit">
               <VectorControls 
                 options={options}
                 onOptionsChange={updateOptionsAndProcess}

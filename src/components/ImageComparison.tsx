@@ -15,11 +15,12 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        // Usamos as dimensões reais do arquivo
-        setDimensions({
-          width: img.naturalWidth,
-          height: img.naturalHeight
-        });
+        const aspectRatio = img.naturalHeight / img.naturalWidth;
+        const maxWidth = Math.min(800, window.innerWidth - 32);
+        const width = maxWidth;
+        const height = width * aspectRatio;
+        
+        setDimensions({ width, height });
       };
       img.src = originalImage;
     }
@@ -27,60 +28,55 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   
   if (!originalImage) return null;
 
-  // Mantém as dimensões originais do arquivo no SVG
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
-  // Calcula o fator de escala para exibição responsiva
-  const scale = containerRef.current 
-    ? Math.min(1, containerRef.current.clientWidth / dimensions.width)
-    : 1;
-
   return (
-    <div 
-      ref={containerRef}
-      className="relative border rounded-lg overflow-hidden bg-white"
-      style={{
-        width: '100%',
-        height: dimensions.height * scale,
-        maxWidth: dimensions.width
-      }}
-    >
-      {/* Container do SVG vetorizado */}
+    <div className="space-y-4">
       <div 
-        className="absolute inset-0"
-        style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
-      >
-        <div 
-          style={{ width: dimensions.width, height: dimensions.height }}
-          dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
-        />
-      </div>
-      
-      {/* Container da imagem original com clip-path */}
-      <div 
-        className="absolute inset-0"
+        ref={containerRef}
+        className="relative border rounded-lg overflow-hidden bg-white mx-auto"
         style={{
-          clipPath: `inset(0 ${100 - position}% 0 0)`,
-          transition: 'clip-path 0.1s ease-out',
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left'
+          width: dimensions.width,
+          height: dimensions.height,
+          maxWidth: '100%',
+          aspectRatio: dimensions.width / dimensions.height
         }}
       >
-        <img 
-          src={originalImage} 
-          alt="Original"
+        <div className="absolute inset-0">
+          <div dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} />
+        </div>
+        
+        <div 
+          className="absolute inset-0"
           style={{
-            width: dimensions.width,
-            height: dimensions.height
+            clipPath: `inset(0 ${100 - position}% 0 0)`,
+            transition: 'clip-path 0.1s ease-out'
           }}
+        >
+          <img 
+            src={originalImage} 
+            alt="Original"
+            className="w-full h-full object-contain"
+          />
+        </div>
+
+        <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+          Vetorizado
+        </div>
+        <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+          Original
+        </div>
+
+        <div 
+          className="absolute top-1/2 w-0.5 h-12 bg-white shadow-lg -translate-y-1/2 pointer-events-none"
+          style={{ left: `${position}%` }}
         />
       </div>
 
-      {/* Controles e labels */}
-      <div className="absolute inset-x-0 bottom-4 mx-auto w-2/3">
+      <div className="px-4 w-full max-w-md mx-auto">
         <Slider
           value={[position]}
           onValueChange={([value]) => setPosition(value)}
@@ -90,18 +86,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           className="z-10"
         />
       </div>
-
-      <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
-        Vetorizado
-      </div>
-      <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
-        Original
-      </div>
-
-      <div 
-        className="absolute top-1/2 w-0.5 h-12 bg-white shadow-lg -translate-y-1/2 pointer-events-none"
-        style={{ left: `${position}%` }}
-      />
     </div>
   );
 };
