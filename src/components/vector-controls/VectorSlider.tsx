@@ -16,28 +16,33 @@ interface VectorSliderProps {
 
 const VectorSlider = ({ label, tip, value, onChange, min, max, step }: VectorSliderProps) => {
   return (
-    <div className="mb-6">
+    <div className="mb-6 group">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center gap-2 mb-2">
-              <Label>{label}</Label>
-              <HelpCircle className="w-4 h-4 text-gray-400" />
+              <Label className="text-sm font-medium cursor-help">{label}</Label>
+              <HelpCircle className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{tip}</p>
+            <p className="text-sm">{tip}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <Slider
-        value={[value]}
-        onValueChange={([value]) => onChange(value)}
-        min={min}
-        max={max}
-        step={step}
-        className="w-full"
-      />
+      <div className="flex items-center gap-4">
+        <Slider
+          value={[value]}
+          onValueChange={([value]) => onChange(value)}
+          min={min}
+          max={max}
+          step={step}
+          className="w-full"
+        />
+        <span className="text-sm text-muted-foreground w-12 text-right">
+          {value.toFixed(step >= 1 ? 0 : 1)}
+        </span>
+      </div>
     </div>
   );
 };
