@@ -9,6 +9,7 @@ import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
 import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { extractDominantColors, mapColorsToSvgPaths } from '@/utils/colorAnalysis'; // Import the new utility
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -62,7 +63,10 @@ const Index = () => {
         .filter(text => text.length > 0);
 
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
+        const imageUrl = reader.result as string;
+        const dominantColors = await extractDominantColors(imageUrl, 8);
+
         const params: potrace.Params = {
           turdSize: options.turdSize,
           alphaMax: options.alphaMax,
@@ -82,11 +86,7 @@ const Index = () => {
           if (err) throw err;
           
           if (options.colorMode === 'color') {
-            // Preserva as cores originais usando o atributo fill com cores RGB
-            svg = svg.replace(/<path([^>]*)>/g, (match, attrs) => {
-              const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
-              return `<path${attrs} fill="${randomColor}">`;
-            });
+            svg = mapColorsToSvgPaths(svg, dominantColors);
           } else if (options.colorMode === 'grayscale') {
             svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
           } else if (options.colorMode === 'blackwhite') {
