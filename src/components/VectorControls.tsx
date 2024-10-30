@@ -1,13 +1,12 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { ColorMode } from '@/types/vector';
 import VectorSlider from './vector-controls/VectorSlider';
-import ColorModeSelector from './vector-controls/ColorModeSelector';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChevronDown } from 'lucide-react';
+import DownloadButtons from './vector-controls/DownloadButtons';
 
 interface VectorOptions {
-  colorMode: ColorMode;
   quality: number;
   turdSize: number;
   alphaMax: number;
@@ -24,85 +23,86 @@ interface VectorControlsProps {
   options: VectorOptions;
   onOptionsChange: (newOptions: Partial<VectorOptions>) => void;
   isProcessing: boolean;
+  vectorSvg?: string;
 }
 
-const VectorControls = ({ options, onOptionsChange, isProcessing }: VectorControlsProps) => {
+const VectorControls = ({ options, onOptionsChange, isProcessing, vectorSvg }: VectorControlsProps) => {
   return (
     <Card className="p-6 shadow-lg border-2">
       <h3 className="text-xl font-semibold mb-6 text-center">Opções de Conversão</h3>
       
-      <ScrollArea className="h-[calc(100vh-200px)] pr-4">
-        <ColorModeSelector
-          value={options.colorMode}
-          onChange={(value) => onOptionsChange({ colorMode: value })}
-          isProcessing={isProcessing}
-        />
+      {vectorSvg && (
+        <>
+          <DownloadButtons vectorSvg={vectorSvg} />
+          <Separator className="my-6" />
+        </>
+      )}
 
-        <Separator className="my-6" />
-        
-        <div className="space-y-6">
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Básicos</h4>
-            <VectorSlider
-              label="Qualidade"
-              tip="Ajusta a qualidade geral da vetorização"
-              value={options.quality}
-              onChange={(value) => onOptionsChange({ quality: value })}
-              min={0}
-              max={1}
-              step={0.1}
-            />
+      <div className="relative">
+        <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Básicos</h4>
+              <VectorSlider
+                label="Qualidade"
+                tip="Ajusta a qualidade geral da vetorização"
+                value={options.quality}
+                onChange={(value) => onOptionsChange({ quality: value })}
+                min={0}
+                max={1}
+                step={0.1}
+              />
 
-            <VectorSlider
-              label="Contraste"
-              tip="Define o limite entre preto e branco"
-              value={options.threshold}
-              onChange={(value) => onOptionsChange({ threshold: value })}
-              min={0}
-              max={255}
-              step={1}
-            />
-          </div>
+              <VectorSlider
+                label="Contraste"
+                tip="Define o limite entre preto e branco"
+                value={options.threshold}
+                onChange={(value) => onOptionsChange({ threshold: value })}
+                min={0}
+                max={255}
+                step={1}
+              />
+            </div>
 
-          <Separator />
+            <Separator />
 
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes de Traçado</h4>
-            <VectorSlider
-              label="Suavidade"
-              tip="Controla a suavidade das curvas"
-              value={options.alphaMax}
-              onChange={(value) => onOptionsChange({ alphaMax: value })}
-              min={0}
-              max={1}
-              step={0.1}
-            />
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes de Traçado</h4>
+              <VectorSlider
+                label="Suavidade"
+                tip="Controla a suavidade das curvas"
+                value={options.alphaMax}
+                onChange={(value) => onOptionsChange({ alphaMax: value })}
+                min={0}
+                max={1}
+                step={0.1}
+              />
 
-            <VectorSlider
-              label="Simplificação"
-              tip="Controla a simplificação do traçado"
-              value={options.pathomit}
-              onChange={(value) => onOptionsChange({ pathomit: value })}
-              min={0}
-              max={20}
-              step={1}
-            />
+              <VectorSlider
+                label="Simplificação"
+                tip="Controla a simplificação do traçado"
+                value={options.pathomit}
+                onChange={(value) => onOptionsChange({ pathomit: value })}
+                min={0}
+                max={20}
+                step={1}
+              />
 
-            <VectorSlider
-              label="Suavização"
-              tip="Nível de suavização das curvas"
-              value={options.smoothing}
-              onChange={(value) => onOptionsChange({ smoothing: value })}
-              min={0}
-              max={2}
-              step={0.1}
-            />
-          </div>
+              <VectorSlider
+                label="Suavização"
+                tip="Nível de suavização das curvas"
+                value={options.smoothing}
+                onChange={(value) => onOptionsChange({ smoothing: value })}
+                min={0}
+                max={2}
+                step={0.1}
+              />
+            </div>
 
-          <Separator />
+            <Separator />
 
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Avançados</h4>
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Avançados</h4>
             <VectorSlider
               label="Tamanho Mínimo"
               tip="Define o tamanho mínimo dos objetos que serão detectados"
@@ -152,9 +152,13 @@ const VectorControls = ({ options, onOptionsChange, isProcessing }: VectorContro
               max={2}
               step={0.1}
             />
+            </div>
           </div>
+        </ScrollArea>
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent pointer-events-none flex items-end justify-center">
+          <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" />
         </div>
-      </ScrollArea>
+      </div>
     </Card>
   );
 };
