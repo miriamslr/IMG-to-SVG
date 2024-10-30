@@ -69,11 +69,10 @@ const Index = () => {
           optCurve: true,
           threshold: options.threshold,
           blackOnWhite: true,
-          color: options.colorMode === 'grayscale' ? '#666666' : 
-                 options.colorMode === 'blackwhite' ? '#000000' : undefined,
-          background: '#FFFFFF',
-          fillStrategy: options.colorMode === 'color' ? 'dominant' : 'fixed',
-          rangeDistribution: options.colorMode === 'color' ? 'auto' : 'none',
+          color: undefined,
+          background: 'transparent',
+          fillStrategy: 'dominant',
+          rangeDistribution: 'auto',
           optTolerance: options.optTolerance,
           pathomit: options.pathomit,
         };
@@ -83,14 +82,12 @@ const Index = () => {
           
           // Ajusta o SVG baseado no modo de cor
           if (options.colorMode === 'color') {
-            // Remove qualquer preenchimento existente e preserva as cores originais
+            // Mantém as cores originais
             svg = svg.replace(/fill="[^"]*"/g, '');
-            svg = svg.replace(/<path/g, '<path fill="auto"');
+            svg = svg.replace(/<path/g, '<path fill="currentColor" style="color: var(--original-color)"');
           } else if (options.colorMode === 'grayscale') {
-            // Aplica tons de cinza
             svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
           } else if (options.colorMode === 'blackwhite') {
-            // Garante que seja preto puro
             svg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
           }
           
