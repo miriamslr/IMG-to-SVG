@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
 
 interface ImageComparisonProps {
@@ -8,8 +8,29 @@ interface ImageComparisonProps {
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  
+  useEffect(() => {
+    if (originalImage) {
+      const img = new Image();
+      img.onload = () => {
+        setDimensions({
+          width: img.width,
+          height: img.height
+        });
+      };
+      img.src = originalImage;
+    }
+  }, [originalImage]);
   
   if (!originalImage) return null;
+
+  // Ajusta o SVG para usar as dimensões da imagem original
+  const adjustedVectorImage = vectorImage.replace(
+    /<svg/, 
+    `<svg preserveAspectRatio="xMidYMid meet" width="${dimensions.width}" height="${dimensions.height}"`
+  );
 
   return (
     <div className="relative w-full aspect-[4/3] border rounded-lg overflow-hidden bg-white">
@@ -17,7 +38,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         <div 
           className="w-full h-full flex items-center justify-center"
           dangerouslySetInnerHTML={{ 
-            __html: vectorImage.replace(/<svg/, '<svg preserveAspectRatio="xMidYMid meet"') 
+            __html: adjustedVectorImage
           }}
         />
       </div>
