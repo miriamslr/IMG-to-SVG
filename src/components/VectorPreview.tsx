@@ -2,33 +2,98 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { ColorMode } from '@/types/vector';
+import { toast } from '@/components/ui/use-toast';
 
 interface VectorPreviewProps {
   svgContent: string;
   recognizedText: string[];
   detectedFonts: string[];
   colorMode: ColorMode;
+  originalImage?: string;
 }
 
-const VectorPreview = ({ svgContent, recognizedText, detectedFonts, colorMode }: VectorPreviewProps) => {
-  const handleDownload = () => {
-    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `vector-${colorMode}.svg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+const VectorPreview = ({ 
+  svgContent, 
+  recognizedText, 
+  detectedFonts, 
+  colorMode,
+  originalImage 
+}: VectorPreviewProps) => {
+  const handleDownload = async (format: 'svg' | 'pdf' | 'ai' | 'cdr') => {
+    try {
+      let blob: Blob;
+      let filename: string;
+
+      switch (format) {
+        case 'svg':
+          blob = new Blob([svgContent], { type: 'image/svg+xml' });
+          filename = `vector-${colorMode}.svg`;
+          break;
+        case 'pdf':
+          // Nota: Em um ambiente real, isso seria feito no servidor
+          toast({
+            title: "Formato não suportado",
+            description: "A conversão para PDF requer processamento no servidor.",
+            variant: "destructive"
+          });
+          return;
+        case 'ai':
+        case 'cdr':
+          toast({
+            title: "Formato não suportado",
+            description: `A conversão para ${format.toUpperCase()} requer software proprietário.`,
+            variant: "destructive"
+          });
+          return;
+        default:
+          return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download iniciado",
+        description: `Seu arquivo ${format.toUpperCase()} está sendo baixado.`
+      });
+    } catch (error) {
+      toast({
+        title: "Erro no download",
+        description: "Ocorreu um erro ao gerar o arquivo.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-8">
+    <div className="w-full max-w-6xl mx-auto mt-8">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({colorMode})</h3>
-          <div className="border rounded-lg p-4 bg-gray-50" dangerouslySetInnerHTML={{ __html: svgContent }} />
+        <div className="grid grid-cols-2 gap-6 mb-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Imagem Original</h3>
+            {originalImage && (
+              <div className="border rounded-lg p-4 bg-gray-50 h-[400px] flex items-center justify-center">
+                <img 
+                  src={originalImage} 
+                  alt="Original" 
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            )}
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({colorMode})</h3>
+            <div 
+              className="border rounded-lg p-4 bg-gray-50 h-[400px] flex items-center justify-center" 
+              dangerouslySetInnerHTML={{ __html: svgContent }} 
+            />
+          </div>
         </div>
 
         {recognizedText.length > 0 && (
@@ -55,10 +120,24 @@ const VectorPreview = ({ svgContent, recognizedText, detectedFonts, colorMode }:
           </div>
         )}
 
-        <Button onClick={handleDownload} className="w-full">
-          <Download className="w-4 h-4 mr-2" />
-          Download SVG
-        </Button>
+        <div className="grid grid-cols-4 gap-4">
+          <Button onClick={() => handleDownload('svg')} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            SVG
+          </Button>
+          <Button onClick={() => handleDownload('pdf')} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            PDF
+          </Button>
+          <Button onClick={() => handleDownload('ai')} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            AI
+          </Button>
+          <Button onClick={() => handleDownload('cdr')} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            CDR
+          </Button>
+        </div>
       </div>
     </div>
   );
