@@ -1,24 +1,5 @@
-import { SVG, cleanupSVG, runSVGO, parseColors } from '@iconify/tools';
-import { svg2png } from 'svg-png-converter';
 import { ColorMode } from '@/types/vector';
 import ImageTracer from 'imagetracerjs';
-
-export const optimizeSVG = async (svgString: string): Promise<string> => {
-  const svg = new SVG(svgString);
-  await cleanupSVG(svg);
-  await runSVGO(svg);
-  await parseColors(svg);
-  return svg.toString();
-};
-
-export const convertSVGtoPNG = async (svgString: string): Promise<Buffer> => {
-  const result = await svg2png({
-    input: svgString,
-    encoding: 'buffer',
-    format: 'png',
-  });
-  return result as Buffer;
-};
 
 export const processVector = async (
   imageUrl: string, 
