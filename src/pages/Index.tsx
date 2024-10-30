@@ -40,18 +40,12 @@ const Index = () => {
     });
 
     try {
-      const result = await Tesseract.recognize(selectedImage, 'por', {
-        logger: m => console.log(m),
-        langPath: 'https://tessdata.projectnaptha.com/4.0.0',
-        workerOptions: {
-          workerPath: 'https://unpkg.com/tesseract.js@v5.0.0/dist/worker.min.js',
-          corePath: 'https://unpkg.com/tesseract.js-core@v5.0.0/tesseract-core.wasm.js',
-        },
-        rectangle: undefined,
-        pdfTitle: 'Extracted Text',
-        pdfAuthor: 'Highvectorify',
-        pdfSubject: 'OCR Result',
-      });
+      const worker = await Tesseract.createWorker();
+      await worker.load();
+      await worker.loadLanguage('por');
+      await worker.initialize('por');
+      const result = await worker.recognize(selectedImage);
+      await worker.terminate();
 
       const recognizedText = result.data.paragraphs
         .map(p => p.text.trim())
