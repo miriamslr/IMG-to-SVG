@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { ColorMode } from '@/types/vector';
 import { toast } from '@/components/ui/use-toast';
+import Raphael from 'raphael';
 
 interface VectorPreviewProps {
   svgContent: string;
@@ -19,49 +20,99 @@ const VectorPreview = ({
   colorMode,
   originalImage 
 }: VectorPreviewProps) => {
+  const vectorRef = useRef<HTMLDivElement>(null);
+  const raphaelRef = useRef<RaphaelPaper | null>(null);
+
+  useEffect(() => {
+    if (vectorRef.current && svgContent) {
+      // Clear previous content
+      if (raphaelRef.current) {
+        raphaelRef.current.remove();
+      }
+
+      // Create new Raphael paper
+      const container = vectorRef.current;
+      const paper = Raphael(container, container.clientWidth, container.clientHeight);
+      raphaelRef.current = paper;
+
+      // Parse SVG string and import to Raphael
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+      const paths = svgDoc.getElementsByTagName('path');
+
+      // Import each path
+      Array.from(paths).forEach(path => {
+        const pathData = path.getAttribute('d');
+        if (pathData) {
+          const raphaelPath = paper.path(pathData);
+          
+          // Apply color based on mode
+          switch (colorMode) {
+            case 'blackwhite':
+              raphaelPath.attr({ fill: '#000000', stroke: 'none' });
+              break;
+            case 'grayscale':
+              raphaelPath.attr({ fill: '#666666', stroke: 'none' });
+              break;
+            case 'color':
+              // Keep original colors or use a default
+              const originalFill = path.getAttribute('fill');
+              raphaelPath.attr({ 
+                fill: originalFill || '#000000',
+                stroke: 'none'
+              });
+              break;
+          }
+        }
+      });
+    }
+  }, [svgContent, colorMode]);
+
   const handleDownload = async (format: 'svg' | 'pdf' | 'ai' | 'cdr') => {
     try {
       let blob: Blob;
       let filename: string;
 
-      switch (format) {
-        case 'svg':
-          blob = new Blob([svgContent], { type: 'image/svg+xml' });
-          filename = `vector-${colorMode}.svg`;
-          break;
-        case 'pdf':
-          // Nota: Em um ambiente real, isso seria feito no servidor
-          toast({
-            title: "Formato não suportado",
-            description: "A conversão para PDF requer processamento no servidor.",
-            variant: "destructive"
-          });
-          return;
-        case 'ai':
-        case 'cdr':
-          toast({
-            title: "Formato não suportado",
-            description: `A conversão para ${format.toUpperCase()} requer software proprietário.`,
-            variant: "destructive"
-          });
-          return;
-        default:
-          return;
+      if (raphaelRef.current) {
+        const svgData = raphaelRef.current.toSVG();
+        switch (format) {
+          case 'svg':
+            blob = new Blob([svgData], { type: 'image/svg+xml' });
+            filename = `vector-${colorMode}.svg`;
+            break;
+          case 'pdf':
+            toast({
+              title: "Formato não suportado",
+              description: "A conversão para PDF requer processamento no servidor.",
+              variant: "destructive"
+            });
+            return;
+          case 'ai':
+          case 'cdr':
+            toast({
+              title: "Formato não suportado",
+              description: `A conversão para ${format.toUpperCase()} requer software proprietário.`,
+              variant: "destructive"
+            });
+            return;
+          default:
+            return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast({
+          title: "Download iniciado",
+          description: `Seu arquivo ${format.toUpperCase()} está sendo baixado.`
+        });
       }
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "Download iniciado",
-        description: `Seu arquivo ${format.toUpperCase()} está sendo baixado.`
-      });
     } catch (error) {
       toast({
         title: "Erro no download",
@@ -90,8 +141,8 @@ const VectorPreview = ({
           <div>
             <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({colorMode})</h3>
             <div 
-              className="border rounded-lg p-4 bg-gray-50 h-[400px] flex items-center justify-center" 
-              dangerouslySetInnerHTML={{ __html: svgContent }} 
+              ref={vectorRef}
+              className="border rounded-lg p-4 bg-gray-50 h-[400px] flex items-center justify-center"
             />
           </div>
         </div>
