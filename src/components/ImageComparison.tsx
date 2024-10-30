@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -17,8 +10,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [imageNaturalDimensions, setImageNaturalDimensions] = useState({ width: 0, height: 0 });
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
@@ -61,25 +52,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     1
   );
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    setMousePosition({
-      x: (e.clientX - rect.left) / scale,
-      y: (e.clientY - rect.top) / scale
-    });
-  };
-
-  const PreviewContent = ({ isZoomed = false }: { isZoomed?: boolean }) => {
-    const contentScale = isZoomed ? 1 : scale;
-    const zoomStyle = isHovering && !isZoomed ? {
-      transform: `scale(2)`,
-      transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`
-    } : {};
-
+  const PreviewContent = () => {
     const imageContainerStyle = {
-      width: dimensions.width * contentScale,
-      height: dimensions.height * contentScale,
+      width: dimensions.width * scale,
+      height: dimensions.height * scale,
       margin: 'auto',
       position: 'relative' as const
     };
@@ -91,9 +67,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           <div 
             className="absolute inset-0"
             style={{ 
-              transform: `scale(${contentScale})`,
-              transformOrigin: 'top left',
-              ...zoomStyle
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left'
             }}
           >
             <div 
@@ -113,9 +88,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             className="absolute inset-0"
             style={{
               clipPath: `inset(0 ${100 - position}% 0 0)`,
-              transform: `scale(${contentScale})`,
-              transformOrigin: 'top left',
-              ...zoomStyle
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left'
             }}
           >
             <img 
@@ -148,28 +122,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     <div className="h-[calc(100vh-8rem)] flex flex-col">
       <div 
         ref={containerRef} 
-        className="relative group cursor-zoom-in flex-1 min-h-0"
-        onMouseMove={handleMouseMove}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        className="relative flex-1 min-h-0"
       >
         <PreviewContent />
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button 
-              variant="secondary" 
-              size="icon"
-              className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-auto">
-            <div className="w-full h-full flex items-center justify-center">
-              <PreviewContent isZoomed={true} />
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
 
       <div className="h-[60px] px-4 w-full max-w-md mx-auto flex items-center">
