@@ -6,7 +6,6 @@ import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
-import * as potrace from 'potrace';
 import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -51,49 +50,14 @@ const Index = () => {
         .map(p => p.text.trim())
         .filter(text => text.length > 0);
 
-      // Image to Vector Processing
-      const reader = new FileReader();
-      reader.onload = () => {
-        const imageUrl = reader.result as string;
-        
-        potrace.trace(imageUrl, {
-          turdSize: Math.floor(options.turdSize),
-          alphaMax: options.alphaMax,
-          threshold: Math.floor(options.threshold),
-          optTolerance: options.optTolerance,
-          pathomit: Math.floor(options.pathomit),
-        }, (err: Error | null, svg: string) => {
-          if (err) throw err;
-          
-          let processedSvg = svg;
-          
-          switch (options.colorMode) {
-            case 'color':
-              // Mantém as cores originais removendo qualquer atributo fill existente
-              processedSvg = svg.replace(/fill="[^"]*"/g, '');
-              break;
-            case 'grayscale':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
-              break;
-            case 'blackwhite':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
-              break;
-          }
-          
-          const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
-            Math.random() > 0.5
-          );
-          
-          setVectorResult({
-            svg: processedSvg,
-            text: recognizedText,
-            fonts: detectedFonts
-          });
-          
-          setProcessing(false);
-        });
-      };
-      reader.readAsDataURL(file);
+      toast({
+        title: "Funcionalidade temporariamente indisponível",
+        description: "A conversão para vetor está temporariamente indisponível.",
+        variant: "destructive"
+      });
+      
+      setProcessing(false);
+      
     } catch (error) {
       console.error('Error processing image:', error);
       toast({
