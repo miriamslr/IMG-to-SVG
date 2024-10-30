@@ -102,6 +102,11 @@ const Index = () => {
     }
   };
 
+  const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
+    setOptions(prev => ({ ...prev, ...newOptions }));
+    processImage();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
       <div className="max-w-7xl mx-auto">
