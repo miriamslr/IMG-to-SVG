@@ -40,14 +40,17 @@ const Index = () => {
     });
 
     try {
-      // Configurações melhoradas do Tesseract
       const result = await Tesseract.recognize(selectedImage, 'por', {
         logger: m => console.log(m),
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?@#$%&*()[]{}/<>-+=_\\|"\'',
-        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-        tessjs_create_pdf: '1',
-        tessjs_create_hocr: '1',
-        preserve_interword_spaces: '1',
+        langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+        workerOptions: {
+          workerPath: 'https://unpkg.com/tesseract.js@v5.0.0/dist/worker.min.js',
+          corePath: 'https://unpkg.com/tesseract.js-core@v5.0.0/tesseract-core.wasm.js',
+        },
+        rectangle: undefined,
+        pdfTitle: 'Extracted Text',
+        pdfAuthor: 'Highvectorify',
+        pdfSubject: 'OCR Result',
       });
 
       const recognizedText = result.data.paragraphs
@@ -73,7 +76,6 @@ const Index = () => {
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
           
-          // Detectar fontes baseado no texto reconhecido
           const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
             Math.random() > 0.5
           );
