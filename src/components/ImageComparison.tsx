@@ -1,5 +1,5 @@
-import React from 'react';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import React, { useState } from 'react';
+import { Slider } from '@/components/ui/slider';
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -7,31 +7,55 @@ interface ImageComparisonProps {
 }
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
+  const [position, setPosition] = useState(50);
+  
   if (!originalImage) return null;
 
   return (
     <div className="relative w-full aspect-[4/3] border rounded-lg overflow-hidden">
-      <ResizablePanelGroup direction="horizontal" className="h-full">
-        <ResizablePanel defaultSize={50}>
-          <div className="h-full">
-            <img 
-              src={originalImage} 
-              alt="Original" 
-              className="w-full h-full object-contain"
-            />
-            <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
-              BEFORE
-            </div>
-          </div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={50}>
-          <div className="h-full" dangerouslySetInnerHTML={{ __html: vectorImage }} />
-          <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
-            AFTER
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <div className="absolute inset-0">
+        <img 
+          src={originalImage} 
+          alt="Original" 
+          className="w-full h-full object-contain"
+        />
+      </div>
+      
+      <div 
+        className="absolute inset-0"
+        style={{
+          clipPath: `inset(0 ${100 - position}% 0 0)`,
+          transition: 'clip-path 0.1s ease-out'
+        }}
+      >
+        <div 
+          className="w-full h-full"
+          dangerouslySetInnerHTML={{ __html: vectorImage }}
+        />
+      </div>
+
+      <div className="absolute inset-x-0 bottom-4 mx-auto w-2/3">
+        <Slider
+          value={[position]}
+          onValueChange={([value]) => setPosition(value)}
+          min={0}
+          max={100}
+          step={0.1}
+          className="z-10"
+        />
+      </div>
+
+      <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
+        Original
+      </div>
+      <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
+        Vetorizado
+      </div>
+
+      <div 
+        className="absolute top-1/2 w-0.5 h-12 bg-white shadow-lg -translate-y-1/2 pointer-events-none"
+        style={{ left: `${position}%` }}
+      />
     </div>
   );
 };
