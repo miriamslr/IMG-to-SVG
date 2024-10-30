@@ -65,6 +65,7 @@
     "recharts": "^2.12.7",
     "sonner": "^1.5.0",
     "svg-to-pdfkit": "^0.1.8",
+    "svg2png": "^4.1.1",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^5.1.1",
