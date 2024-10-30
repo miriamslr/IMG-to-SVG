@@ -69,7 +69,8 @@ const Index = () => {
           
           switch (options.colorMode) {
             case 'color':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#333333"');
+              // Mantém as cores originais removendo qualquer atributo fill existente
+              processedSvg = svg.replace(/fill="[^"]*"/g, '');
               break;
             case 'grayscale':
               processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
