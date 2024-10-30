@@ -14,10 +14,11 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   return (
     <div className="relative w-full aspect-[4/3] border rounded-lg overflow-hidden bg-white">
       <div className="absolute inset-0 flex items-center justify-center">
-        <img 
-          src={originalImage} 
-          alt="Original" 
-          className="max-w-full max-h-full object-contain"
+        <div 
+          className="w-full h-full flex items-center justify-center"
+          dangerouslySetInnerHTML={{ 
+            __html: vectorImage.replace(/<svg/, '<svg preserveAspectRatio="xMidYMid meet"') 
+          }}
         />
       </div>
       
@@ -28,11 +29,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           transition: 'clip-path 0.1s ease-out'
         }}
       >
-        <div 
-          className="w-full h-full flex items-center justify-center"
-          dangerouslySetInnerHTML={{ 
-            __html: vectorImage.replace(/<svg/, '<svg preserveAspectRatio="xMidYMid meet"') 
-          }}
+        <img 
+          src={originalImage} 
+          alt="Original" 
+          className="max-w-full max-h-full object-contain"
         />
       </div>
 
@@ -48,10 +48,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       </div>
 
       <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
-        Original
+        Vetorizado
       </div>
       <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 text-sm rounded">
-        Vetorizado
+        Original
       </div>
 
       <div 
