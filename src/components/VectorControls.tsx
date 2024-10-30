@@ -28,7 +28,7 @@ interface VectorControlsProps {
 
 const VectorControls = ({ options, onOptionsChange, isProcessing, vectorSvg }: VectorControlsProps) => {
   return (
-    <Card className="p-6 shadow-lg border-2">
+    <Card className="p-6 shadow-lg border-2 h-[calc(100vh-8rem)] flex flex-col">
       <h3 className="text-xl font-semibold mb-6 text-center">Opções de Conversão</h3>
       
       {vectorSvg && (
@@ -38,8 +38,8 @@ const VectorControls = ({ options, onOptionsChange, isProcessing, vectorSvg }: V
         </>
       )}
 
-      <div className="relative">
-        <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+      <div className="flex-1 relative">
+        <ScrollArea className="h-full pr-4">
           <div className="space-y-6">
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Básicos</h4>
@@ -155,9 +155,6 @@ const VectorControls = ({ options, onOptionsChange, isProcessing, vectorSvg }: V
             </div>
           </div>
         </ScrollArea>
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent pointer-events-none flex items-end justify-center">
-          <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" />
-        </div>
       </div>
     </Card>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Search, ZoomIn, ZoomOut } from 'lucide-react';
+import { Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       const img = new Image();
       img.onload = () => {
         const containerWidth = containerRef.current?.clientWidth || 800;
+        const scale = containerWidth / img.naturalWidth;
         setDimensions({
           width: img.naturalWidth,
           height: img.naturalHeight
@@ -36,53 +37,50 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
-  const scale = containerRef.current 
-    ? Math.min(0.7, containerRef.current.clientWidth / dimensions.width) // Reduzido para 70% do tamanho original
-    : 0.7;
+  const containerHeight = containerRef.current 
+    ? Math.min(containerRef.current.clientWidth * 0.75, dimensions.height) 
+    : dimensions.height;
 
   const PreviewContent = () => (
     <div 
       className="relative border rounded-lg overflow-hidden bg-white mx-auto"
       style={{
         width: '100%',
-        height: dimensions.height * scale,
-        maxWidth: dimensions.width * scale
+        height: containerHeight,
+        maxHeight: '70vh'
       }}
     >
-      <div 
-        className="absolute inset-0"
-        style={{ 
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left'
-        }}
-      >
+      <div className="absolute inset-0 flex items-center justify-center">
         <div 
           style={{ 
             width: dimensions.width,
-            height: dimensions.height
+            height: dimensions.height,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            position: 'relative'
           }}
           dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
         />
       </div>
       
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 flex items-center justify-center"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
-          transition: 'clip-path 0.1s ease-out',
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left'
         }}
       >
         <img 
           src={originalImage} 
           alt="Original"
           style={{
-            width: dimensions.width,
-            height: dimensions.height
+            width: 'auto',
+            height: 'auto',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            objectFit: 'contain'
           }}
         />
       </div>
@@ -112,32 +110,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           </DialogTrigger>
           <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-auto">
             <div className="w-full h-full flex items-center justify-center">
-              <div 
-                className="relative border rounded-lg overflow-hidden bg-white"
-                style={{
-                  width: dimensions.width,
-                  height: dimensions.height
-                }}
-              >
-                <div className="absolute inset-0">
-                  <div dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} />
-                </div>
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    clipPath: `inset(0 ${100 - position}% 0 0)`,
-                  }}
-                >
-                  <img 
-                    src={originalImage} 
-                    alt="Original"
-                    style={{
-                      width: '100%',
-                      height: '100%'
-                    }}
-                  />
-                </div>
-              </div>
+              <PreviewContent />
             </div>
           </DialogContent>
         </Dialog>
