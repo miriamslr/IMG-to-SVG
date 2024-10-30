@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { Toaster } from "@/components/ui/toaster";
+import { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import VectorControls from '@/components/VectorControls';
 import ImageComparison from '@/components/ImageComparison';
@@ -22,7 +23,7 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    colorMode: 'color' as ColorMode,
+    colorMode: 'color' as ColorMode, // Definindo 'color' como padrão
     quality: 1,
     turdSize: 2,
     alphaMax: 1,
