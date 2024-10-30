@@ -8,6 +8,7 @@ import { AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { processVector } from '@/utils/imageProcessing';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -50,13 +51,36 @@ const Index = () => {
         .map(p => p.text.trim())
         .filter(text => text.length > 0);
 
-      toast({
-        title: "Funcionalidade temporariamente indisponível",
-        description: "A conversão para vetor está temporariamente indisponível.",
-        variant: "destructive"
-      });
-      
-      setProcessing(false);
+      // Vector Processing
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageUrl = reader.result as string;
+        
+        processVector(imageUrl, {
+          turdSize: Math.floor(options.turdSize),
+          alphaMax: options.alphaMax,
+          threshold: Math.floor(options.threshold),
+          optTolerance: options.optTolerance,
+          pathomit: Math.floor(options.pathomit),
+        }, options.colorMode)
+          .then(svg => {
+            setVectorResult({
+              svg,
+              text: recognizedText,
+              fonts: []
+            });
+            setProcessing(false);
+          })
+          .catch(error => {
+            toast({
+              title: "Erro no processamento",
+              description: error.message,
+              variant: "destructive"
+            });
+            setProcessing(false);
+          });
+      };
+      reader.readAsDataURL(file);
       
     } catch (error) {
       console.error('Error processing image:', error);

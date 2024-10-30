@@ -1,5 +1,5 @@
 import { ColorMode } from '@/types/vector';
-import ImageTracer from 'imagetracerjs';
+import * as Potrace from 'potrace';
 
 export const processVector = async (
   imageUrl: string, 
@@ -14,28 +14,31 @@ export const processVector = async (
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     try {
-      const svg = ImageTracer.imageToSVG(imageUrl, {
-        ltres: options.optTolerance,
-        qtres: options.optTolerance,
+      Potrace.trace(imageUrl, {
+        turdSize: options.turdSize,
+        alphaMax: options.alphaMax,
+        threshold: options.threshold,
+        optTolerance: options.optTolerance,
         pathomit: options.pathomit,
-        colorsampling: colorMode === 'color' ? 1 : 0,
-        numberofcolors: colorMode === 'blackwhite' ? 2 : 16,
-        mincolorratio: 0,
-        colorquantcycles: 3,
+      }, (err: Error | null, svg: string) => {
+        if (err) reject(err);
+        
+        let processedSvg = svg;
+        
+        switch (colorMode) {
+          case 'color':
+            processedSvg = svg.replace(/fill="[^"]*"/g, '');
+            break;
+          case 'grayscale':
+            processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
+            break;
+          case 'blackwhite':
+            processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
+            break;
+        }
+        
+        resolve(processedSvg);
       });
-
-      let processedSvg = svg;
-      
-      switch (colorMode) {
-        case 'grayscale':
-          processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
-          break;
-        case 'blackwhite':
-          processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
-          break;
-      }
-
-      resolve(processedSvg);
     } catch (error) {
       reject(new Error('Error processing vector: ' + (error as Error).message));
     }
