@@ -69,10 +69,11 @@ const Index = () => {
           optCurve: true,
           threshold: options.threshold,
           blackOnWhite: true,
-          color: undefined,
+          color: options.colorMode === 'grayscale' ? '#666666' : 
+                 options.colorMode === 'blackwhite' ? '#000000' : undefined,
           background: 'transparent',
-          fillStrategy: 'dominant',
-          rangeDistribution: 'auto',
+          fillStrategy: options.colorMode === 'color' ? 'dominant' : 'fixed',
+          rangeDistribution: options.colorMode === 'color' ? 'auto' : 'none',
           optTolerance: options.optTolerance,
           pathomit: options.pathomit,
         };
@@ -82,9 +83,12 @@ const Index = () => {
           
           // Ajusta o SVG baseado no modo de cor
           if (options.colorMode === 'color') {
-            // Mantém as cores originais
+            // Preserva as cores originais
             svg = svg.replace(/fill="[^"]*"/g, '');
-            svg = svg.replace(/<path/g, '<path fill="currentColor" style="color: var(--original-color)"');
+            svg = svg.replace(/<path/g, '<path fill="auto" style="fill: var(--original-color)"');
+            svg = svg.replace(/style="([^"]*)"/g, (match, styles) => {
+              return `style="${styles}; color: inherit;"`;
+            });
           } else if (options.colorMode === 'grayscale') {
             svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
           } else if (options.colorMode === 'blackwhite') {
