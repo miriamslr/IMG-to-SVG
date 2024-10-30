@@ -88,11 +88,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
           Original
         </div>
-
-        <div 
-          className="absolute top-1/2 w-0.5 h-12 bg-white shadow-lg -translate-y-1/2 pointer-events-none"
-          style={{ left: `${position}%` }}
-        />
       </div>
 
       <div className="px-4 w-full max-w-md mx-auto">
