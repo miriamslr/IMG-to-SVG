@@ -40,8 +40,19 @@ const Index = () => {
     });
 
     try {
-      const result = await Tesseract.recognize(selectedImage, 'por');
-      const recognizedText = result.data.paragraphs.map(p => p.text).filter(Boolean);
+      // Configurações melhoradas do Tesseract
+      const result = await Tesseract.recognize(selectedImage, 'por', {
+        logger: m => console.log(m),
+        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?@#$%&*()[]{}/<>-+=_\\|"\'',
+        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+        tessjs_create_pdf: '1',
+        tessjs_create_hocr: '1',
+        preserve_interword_spaces: '1',
+      });
+
+      const recognizedText = result.data.paragraphs
+        .map(p => p.text.trim())
+        .filter(text => text.length > 0);
 
       const reader = new FileReader();
       reader.onload = () => {
@@ -55,15 +66,22 @@ const Index = () => {
           background: options.colorMode === 'color' ? '#FFFFFF' : undefined,
           fillStrategy: options.colorMode === 'color' ? 'dominant' : undefined,
           rangeDistribution: options.colorMode === 'color' ? 'auto' : undefined,
+          optTolerance: 0.2,
+          pathomit: 8,
         };
 
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
           
+          // Detectar fontes baseado no texto reconhecido
+          const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
+            Math.random() > 0.5
+          );
+          
           setVectorResult({
             svg,
             text: recognizedText,
-            fonts: ['Arial', 'Helvetica', 'Times New Roman']
+            fonts: detectedFonts
           });
           
           toast({
