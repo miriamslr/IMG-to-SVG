@@ -49,6 +49,7 @@
     "embla-carousel-react": "^8.3.0",
     "imagetracerjs": "^1.2.6",
     "input-otp": "^1.2.4",
+    "jimp": "^1.6.0",
     "lovable-tagger": "^1.0.15",
     "lucide-react": "^0.451.0",
     "next-themes": "^0.3.0",

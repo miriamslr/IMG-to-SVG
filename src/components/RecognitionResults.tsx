@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -9,19 +9,43 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ImageAdjustments } from '@/utils/imageAdjustments';
 
 interface RecognitionResultsProps {
   recognizedText: string[];
   detectedFonts: string[];
+  onAdjustmentsChange?: (adjustments: ImageAdjustments) => void;
 }
 
-const RecognitionResults = ({ recognizedText, detectedFonts }: RecognitionResultsProps) => {
+const RecognitionResults = ({ 
+  recognizedText, 
+  detectedFonts,
+  onAdjustmentsChange 
+}: RecognitionResultsProps) => {
+  const [adjustments, setAdjustments] = useState<ImageAdjustments>({
+    brightness: 50,
+    contrast: 50,
+    saturation: 50,
+    vectorPrecision: 75,
+    pathSimplification: 50,
+    autoOptimize: false,
+    colorMode: 'preserve',
+    smoothEdges: false,
+    noiseReduction: false,
+    effectIntensity: 30
+  });
+
+  const handleAdjustmentChange = (key: keyof ImageAdjustments, value: any) => {
+    const newAdjustments = { ...adjustments, [key]: value };
+    setAdjustments(newAdjustments);
+    onAdjustmentsChange?.(newAdjustments);
+  };
+
   return (
     <div className="space-y-4">
       <Collapsible>
         <CollapsibleTrigger className="flex items-center gap-2 w-full p-4 hover:bg-accent rounded-lg">
           <span className="font-semibold">Opções Avançadas de Personalização</span>
-          <Badge variant="secondary" className="ml-2">Pro</Badge>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <Tabs defaultValue="image" className="w-full">
@@ -37,15 +61,30 @@ const RecognitionResults = ({ recognizedText, detectedFonts }: RecognitionResult
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label>Brilho</Label>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+                    <Slider 
+                      value={[adjustments.brightness]} 
+                      onValueChange={([value]) => handleAdjustmentChange('brightness', value)}
+                      max={100} 
+                      step={1} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Contraste</Label>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+                    <Slider 
+                      value={[adjustments.contrast]} 
+                      onValueChange={([value]) => handleAdjustmentChange('contrast', value)}
+                      max={100} 
+                      step={1} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Saturação</Label>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+                    <Slider 
+                      value={[adjustments.saturation]} 
+                      onValueChange={([value]) => handleAdjustmentChange('saturation', value)}
+                      max={100} 
+                      step={1} 
+                    />
                   </div>
                 </div>
               </Card>
@@ -57,19 +96,37 @@ const RecognitionResults = ({ recognizedText, detectedFonts }: RecognitionResult
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <Label>Otimização Automática</Label>
-                    <Switch />
+                    <Switch 
+                      checked={adjustments.autoOptimize}
+                      onCheckedChange={(checked) => handleAdjustmentChange('autoOptimize', checked)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Precisão das Curvas</Label>
-                    <Slider defaultValue={[75]} max={100} step={1} />
+                    <Slider 
+                      value={[adjustments.vectorPrecision]} 
+                      onValueChange={([value]) => handleAdjustmentChange('vectorPrecision', value)}
+                      max={100} 
+                      step={1} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Simplificação de Caminhos</Label>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+                    <Slider 
+                      value={[adjustments.pathSimplification]} 
+                      onValueChange={([value]) => handleAdjustmentChange('pathSimplification', value)}
+                      max={100} 
+                      step={1} 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Modo de Cor</Label>
-                    <RadioGroup defaultValue="preserve">
+                    <RadioGroup 
+                      value={adjustments.colorMode}
+                      onValueChange={(value: 'preserve' | 'optimize' | 'monochrome') => 
+                        handleAdjustmentChange('colorMode', value)
+                      }
+                    >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="preserve" id="preserve" />
                         <Label htmlFor="preserve">Preservar Cores</Label>
@@ -94,15 +151,26 @@ const RecognitionResults = ({ recognizedText, detectedFonts }: RecognitionResult
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <Label>Suavização de Bordas</Label>
-                    <Switch />
+                    <Switch 
+                      checked={adjustments.smoothEdges}
+                      onCheckedChange={(checked) => handleAdjustmentChange('smoothEdges', checked)}
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <Label>Remoção de Ruído</Label>
-                    <Switch />
+                    <Switch 
+                      checked={adjustments.noiseReduction}
+                      onCheckedChange={(checked) => handleAdjustmentChange('noiseReduction', checked)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Intensidade do Efeito</Label>
-                    <Slider defaultValue={[30]} max={100} step={1} />
+                    <Slider 
+                      value={[adjustments.effectIntensity]} 
+                      onValueChange={([value]) => handleAdjustmentChange('effectIntensity', value)}
+                      max={100} 
+                      step={1} 
+                    />
                   </div>
                 </div>
               </Card>

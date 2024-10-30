@@ -6,6 +6,7 @@ import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
 import { ColorMode } from '@/types/vector';
 import { processVector } from '@/utils/imageProcessing';
+import { processImageAdjustments, ImageAdjustments } from '@/utils/imageAdjustments';
 
 const VectorizerPage = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -33,16 +34,21 @@ const VectorizerPage = () => {
   
   const { toast } = useToast();
 
-  const processImage = async (file: File | null = selectedImage) => {
+  const processImage = async (file: File | null = selectedImage, adjustments?: ImageAdjustments) => {
     if (!file) return;
 
     setProcessing(true);
     try {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         const imageUrl = reader.result as string;
         
-        processVector(imageUrl, {
+        // Apply image adjustments if provided
+        const processedImageUrl = adjustments 
+          ? await processImageAdjustments(imageUrl, adjustments)
+          : imageUrl;
+        
+        processVector(processedImageUrl, {
           turdSize: Math.floor(options.turdSize),
           alphaMax: options.alphaMax,
           threshold: Math.floor(options.threshold),
@@ -87,6 +93,10 @@ const VectorizerPage = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleAdjustmentsChange = (adjustments: ImageAdjustments) => {
+    processImage(selectedImage, adjustments);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <div className="container mx-auto px-4 py-6 max-w-[1400px]">
@@ -114,6 +124,7 @@ const VectorizerPage = () => {
                 <RecognitionResults
                   recognizedText={vectorResult?.text || []}
                   detectedFonts={vectorResult?.fonts || []}
+                  onAdjustmentsChange={handleAdjustmentsChange}
                 />
               </div>
             </div>
