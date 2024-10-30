@@ -5,7 +5,7 @@ import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
 import { ColorMode } from '@/types/vector';
-import * as potrace from 'potrace';
+import { processVector } from '@/utils/imageProcessing';
 
 const SVGcodePage = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -42,36 +42,29 @@ const SVGcodePage = () => {
       reader.onload = () => {
         const imageUrl = reader.result as string;
         
-        potrace.trace(imageUrl, {
+        processVector(imageUrl, {
           turdSize: Math.floor(options.turdSize),
           alphaMax: options.alphaMax,
           threshold: Math.floor(options.threshold),
           optTolerance: options.optTolerance,
           pathomit: Math.floor(options.pathomit),
-        }, (err: Error | null, svg: string) => {
-          if (err) throw err;
-          
-          let processedSvg = svg;
-          
-          switch (options.colorMode) {
-            case 'color':
-              processedSvg = svg.replace(/fill="[^"]*"/g, '');
-              break;
-            case 'grayscale':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
-              break;
-            case 'blackwhite':
-              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
-              break;
-          }
-          
-          setVectorResult({
-            svg: processedSvg,
-            text: [],
-            fonts: []
+        }, options.colorMode)
+          .then(svg => {
+            setVectorResult({
+              svg,
+              text: [],
+              fonts: []
+            });
+            setProcessing(false);
+          })
+          .catch(error => {
+            toast({
+              title: "Erro no processamento",
+              description: error.message,
+              variant: "destructive"
+            });
+            setProcessing(false);
           });
-          setProcessing(false);
-        });
       };
       reader.readAsDataURL(file);
     } catch (error) {
@@ -99,10 +92,10 @@ const SVGcodePage = () => {
       <div className="container mx-auto px-4 py-6 max-w-[1400px]">
         <div className="text-center mb-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Potrace - Conversor de Imagem para Vetor
+            SVGcode - Conversor de Imagem para Vetor
           </h1>
           <p className="text-gray-600">
-            Transforme suas imagens em vetores usando Potrace
+            Transforme suas imagens em vetores usando SVGcode
           </p>
         </div>
 
