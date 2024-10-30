@@ -15,13 +15,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        const containerWidth = containerRef.current?.clientWidth || 800;
-        const scale = containerWidth / img.width;
-        const calculatedHeight = img.height * scale;
-        
+        // Usamos as dimensões reais do arquivo
         setDimensions({
-          width: containerWidth,
-          height: calculatedHeight
+          width: img.naturalWidth,
+          height: img.naturalHeight
         });
       };
       img.src = originalImage;
@@ -30,25 +27,34 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   
   if (!originalImage) return null;
 
-  // Ajusta o SVG para usar as mesmas dimensões da imagem original
+  // Mantém as dimensões originais do arquivo no SVG
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
+
+  // Calcula o fator de escala para exibição responsiva
+  const scale = containerRef.current 
+    ? Math.min(1, containerRef.current.clientWidth / dimensions.width)
+    : 1;
 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full border rounded-lg overflow-hidden bg-white"
-      style={{ height: dimensions.height }}
+      className="relative border rounded-lg overflow-hidden bg-white"
+      style={{
+        width: '100%',
+        height: dimensions.height * scale,
+        maxWidth: dimensions.width
+      }}
     >
       {/* Container do SVG vetorizado */}
       <div 
         className="absolute inset-0"
-        style={{ width: dimensions.width, height: dimensions.height }}
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
       >
         <div 
-          style={{ width: '100%', height: '100%' }}
+          style={{ width: dimensions.width, height: dimensions.height }}
           dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
         />
       </div>
@@ -59,15 +65,16 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
           transition: 'clip-path 0.1s ease-out',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left'
         }}
       >
         <img 
           src={originalImage} 
           alt="Original"
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'fill'
+            width: dimensions.width,
+            height: dimensions.height
           }}
         />
       </div>
