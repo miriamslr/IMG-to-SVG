@@ -15,11 +15,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        const containerWidth = containerRef.current?.clientWidth || 0;
-        const scale = containerWidth / img.width;
+        const containerWidth = containerRef.current?.clientWidth || 800;
+        const aspectRatio = img.height / img.width;
+        const calculatedHeight = containerWidth * aspectRatio;
+        
         setDimensions({
           width: containerWidth,
-          height: img.height * scale
+          height: calculatedHeight
         });
       };
       img.src = originalImage;
@@ -28,10 +30,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   
   if (!originalImage) return null;
 
-  // Ajusta o SVG para usar as dimensões corretas e manter a proporção
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
+    `<svg width="100%" height="100%" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
   return (
@@ -40,7 +41,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       className="relative w-full border rounded-lg overflow-hidden bg-white"
       style={{ height: dimensions.height }}
     >
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 flex items-center justify-center">
         <div 
           className="w-full h-full"
           dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
@@ -48,7 +49,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       </div>
       
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 flex items-center justify-center"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
           transition: 'clip-path 0.1s ease-out'
