@@ -81,13 +81,19 @@ const Index = () => {
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
           
-          // Ajusta o SVG baseado no modo de cor
           if (options.colorMode === 'color') {
-            // Preserva as cores originais
+            // Remove qualquer fill existente e adiciona um novo com a cor original
             svg = svg.replace(/fill="[^"]*"/g, '');
-            svg = svg.replace(/<path/g, '<path fill="auto" style="fill: var(--original-color)"');
+            svg = svg.replace(/<path/g, '<path fill="currentColor"');
+            
+            // Adiciona um estilo para preservar as cores originais
+            svg = svg.replace(/<svg([^>]*)>/, (match, attrs) => {
+              return `<svg${attrs} style="color-scheme: light dark;">`;
+            });
+            
+            // Garante que as cores originais sejam mantidas
             svg = svg.replace(/style="([^"]*)"/g, (match, styles) => {
-              return `style="${styles}; color: inherit;"`;
+              return `style="${styles}; color: inherit; fill: currentColor;"`;
             });
           } else if (options.colorMode === 'grayscale') {
             svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
