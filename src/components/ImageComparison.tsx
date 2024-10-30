@@ -60,14 +60,11 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`
     } : {};
 
-    const containerHeight = isZoomed ? 'auto' : 'calc(100vh - 8rem - 120px)';
-
     return (
       <div 
-        className="relative border rounded-lg overflow-hidden bg-white mx-auto"
+        className="relative border rounded-lg overflow-hidden bg-white mx-auto h-full"
         style={{
           width: '100%',
-          height: containerHeight,
           maxWidth: dimensions.width * contentScale
         }}
       >
@@ -124,10 +121,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)]">
+    <div className="h-[calc(100vh-8rem)] flex flex-col">
       <div 
         ref={containerRef} 
-        className="relative group cursor-zoom-in h-[calc(100%-40px)]"
+        className="relative group cursor-zoom-in flex-1 min-h-0"
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -151,7 +148,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         </Dialog>
       </div>
 
-      <div className="px-4 w-full max-w-md mx-auto h-[40px] flex items-center">
+      <div className="h-[60px] px-4 w-full max-w-md mx-auto flex items-center">
         <Slider
           value={[position]}
           onValueChange={([value]) => setPosition(value)}
