@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import VectorControls from '@/components/VectorControls';
@@ -7,9 +6,9 @@ import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
+import * as potrace from 'potrace';
+import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { vectorize, ColorMode, Hierarchical, PathSimplifyMode } from '@neplex/vectorizer';
-import { ColorMode as AppColorMode } from '@/types/vector';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -22,7 +21,7 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    colorMode: 'color' as AppColorMode,
+    colorMode: 'color' as ColorMode,
     quality: 1,
     turdSize: 2,
     alphaMax: 1,
@@ -53,37 +52,47 @@ const Index = () => {
         .filter(text => text.length > 0);
 
       // Image to Vector Processing
-      const buffer = await file.arrayBuffer();
-      const vectorizerColorMode = options.colorMode === 'color' 
-        ? ColorMode.Color 
-        : options.colorMode === 'grayscale' 
-          ? ColorMode.Grayscale 
-          : ColorMode.Binary;
-
-      const svg = await vectorize(Buffer.from(buffer), {
-        colorMode: vectorizerColorMode,
-        colorPrecision: Math.floor(options.quality * 8),
-        filterSpeckle: Math.floor(options.turdSize),
-        spliceThreshold: Math.floor(options.alphaMax * 45),
-        cornerThreshold: Math.floor(options.cornerThreshold),
-        hierarchical: Hierarchical.Stacked,
-        mode: PathSimplifyMode.Spline,
-        layerDifference: Math.floor(options.optimizePaths * 6),
-        lengthThreshold: Math.floor(options.lineThreshold * 4),
-        maxIterations: Math.floor(options.pathomit)
-      });
-
-      const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
-        Math.random() > 0.5
-      );
-      
-      setVectorResult({
-        svg,
-        text: recognizedText,
-        fonts: detectedFonts
-      });
-      
-      setProcessing(false);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageUrl = reader.result as string;
+        
+        potrace.trace(imageUrl, {
+          turdSize: Math.floor(options.turdSize),
+          alphaMax: options.alphaMax,
+          threshold: Math.floor(options.threshold),
+          optTolerance: options.optTolerance,
+          pathomit: Math.floor(options.pathomit),
+        }, (err: Error | null, svg: string) => {
+          if (err) throw err;
+          
+          let processedSvg = svg;
+          
+          switch (options.colorMode) {
+            case 'color':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#333333"');
+              break;
+            case 'grayscale':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
+              break;
+            case 'blackwhite':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
+              break;
+          }
+          
+          const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
+            Math.random() > 0.5
+          );
+          
+          setVectorResult({
+            svg: processedSvg,
+            text: recognizedText,
+            fonts: detectedFonts
+          });
+          
+          setProcessing(false);
+        });
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error processing image:', error);
       toast({
