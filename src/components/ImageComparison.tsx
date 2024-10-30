@@ -17,7 +17,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         <img 
           src={originalImage} 
           alt="Original" 
-          className="w-full h-full object-contain"
+          className="max-w-full max-h-full object-contain"
         />
       </div>
       
@@ -30,7 +30,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       >
         <div 
           className="w-full h-full flex items-center justify-center"
-          dangerouslySetInnerHTML={{ __html: vectorImage }}
+          dangerouslySetInnerHTML={{ 
+            __html: vectorImage.replace(/<svg/, '<svg preserveAspectRatio="xMidYMid meet"') 
+          }}
         />
       </div>
 
