@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
-import VectorPreview from '@/components/VectorPreview';
 import VectorControls from '@/components/VectorControls';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Wand2 } from 'lucide-react';
+import { Wand2, AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
 import { ColorMode, VectorOptions } from '@/types/vector';
 import { Card } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -51,11 +50,7 @@ const Index = () => {
     if (!file) return;
 
     setProcessing(true);
-    toast({
-      title: "Processando imagem",
-      description: "Isso pode levar alguns segundos...",
-    });
-
+    
     try {
       const worker = await Tesseract.createWorker('por');
       const result = await worker.recognize(file);
@@ -93,11 +88,6 @@ const Index = () => {
             text: recognizedText,
             fonts: detectedFonts
           });
-          
-          toast({
-            title: "Processamento concluído!",
-            description: "Sua imagem foi convertida com sucesso.",
-          });
         });
       };
       reader.readAsDataURL(file);
@@ -112,31 +102,38 @@ const Index = () => {
     }
   };
 
-  const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
-    setOptions(prev => ({ ...prev, ...newOptions }));
-    processImage();
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Conversor de Imagem para Vetor
           </h1>
-          <p className="text-lg text-gray-600">
-            Transforme suas imagens em vetores de alta qualidade com reconhecimento de texto
+          <p className="text-gray-600">
+            Transforme suas imagens em vetores de alta qualidade
           </p>
         </div>
+
+        <Alert className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Use imagens com bom contraste para melhores resultados</li>
+              <li>Ajuste o contraste se as bordas não estiverem sendo detectadas corretamente</li>
+              <li>Para logos e desenhos simples, aumente a simplificação</li>
+              <li>Para detalhes finos, diminua o tamanho mínimo dos objetos</li>
+            </ul>
+          </AlertDescription>
+        </Alert>
 
         {!selectedImage ? (
           <ImageUploader onImageSelect={handleImageSelect} />
         ) : (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="p-4">
-                <h3 className="text-lg font-semibold mb-4">Imagem Original</h3>
-                <div className="aspect-square relative overflow-hidden rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Imagem Original</h3>
+                <div className="relative pb-[100%]">
                   {imagePreview && (
                     <img 
                       src={imagePreview} 
@@ -148,11 +145,11 @@ const Index = () => {
               </Card>
               
               <Card className="p-4">
-                <h3 className="text-lg font-semibold mb-4">Resultado Vetorial ({options.colorMode})</h3>
-                <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-50">
+                <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({options.colorMode})</h3>
+                <div className="relative pb-[100%] bg-gray-50">
                   {vectorResult && (
                     <div 
-                      className="absolute inset-0 w-full h-full flex items-center justify-center"
+                      className="absolute inset-0 w-full h-full flex items-center justify-center p-4"
                       dangerouslySetInnerHTML={{ __html: vectorResult.svg }} 
                     />
                   )}
@@ -165,28 +162,32 @@ const Index = () => {
               onOptionsChange={updateOptionsAndProcess}
             />
 
-            {vectorResult && vectorResult.text.length > 0 && (
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Texto Reconhecido</h3>
-                <div className="space-y-2">
-                  {vectorResult.text.map((text, index) => (
-                    <p key={index} className="text-gray-700">{text}</p>
-                  ))}
-                </div>
-              </Card>
-            )}
+            {vectorResult && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {vectorResult.text.length > 0 && (
+                  <Card className="p-4">
+                    <h3 className="text-lg font-semibold mb-2">Texto Reconhecido</h3>
+                    <div className="space-y-2">
+                      {vectorResult.text.map((text, index) => (
+                        <p key={index} className="text-gray-700">{text}</p>
+                      ))}
+                    </div>
+                  </Card>
+                )}
 
-            {vectorResult && vectorResult.fonts.length > 0 && (
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Fontes Detectadas</h3>
-                <div className="flex flex-wrap gap-2">
-                  {vectorResult.fonts.map((font, index) => (
-                    <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                      {font}
-                    </span>
-                  ))}
-                </div>
-              </Card>
+                {vectorResult.fonts.length > 0 && (
+                  <Card className="p-4">
+                    <h3 className="text-lg font-semibold mb-2">Fontes Detectadas</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {vectorResult.fonts.map((font, index) => (
+                        <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                          {font}
+                        </span>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+              </div>
             )}
           </div>
         )}

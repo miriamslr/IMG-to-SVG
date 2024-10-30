@@ -4,6 +4,8 @@ import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ColorMode, VectorOptions } from '@/types/vector';
 import { Card } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 
 type ExtendedVectorOptions = VectorOptions & {
   turdSize: number;
@@ -21,98 +23,89 @@ interface VectorControlsProps {
   onOptionsChange: (newOptions: Partial<ExtendedVectorOptions>) => void;
 }
 
+const ControlTooltip = ({ tip, children }: { tip: string; children: React.ReactNode }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className="flex items-center gap-2">
+        {children}
+        <HelpCircle className="w-4 h-4 text-gray-400" />
+      </div>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>{tip}</p>
+    </TooltipContent>
+  </Tooltip>
+);
+
 const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-6">Opções de Conversão</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <Card className="p-4">
+      <h3 className="text-lg font-semibold mb-4">Opções de Conversão</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
-          <Label className="mb-2 block">Tamanho Mínimo dos Objetos</Label>
+          <ControlTooltip tip="Define o tamanho mínimo dos objetos que serão detectados. Valores maiores removem detalhes pequenos.">
+            <Label className="mb-2 block">Tamanho Mínimo</Label>
+          </ControlTooltip>
           <Slider
             value={[options.turdSize]}
-            onValueChange={([value]) => 
-              onOptionsChange({ turdSize: value })
-            }
+            onValueChange={([value]) => onOptionsChange({ turdSize: value })}
             min={1}
             max={10}
             step={1}
             className="w-full"
           />
         </div>
+
         <div>
-          <Label className="mb-2 block">Suavidade das Curvas</Label>
+          <ControlTooltip tip="Controla a suavidade das curvas. Valores maiores geram curvas mais suaves.">
+            <Label className="mb-2 block">Suavidade</Label>
+          </ControlTooltip>
           <Slider
             value={[options.alphaMax]}
-            onValueChange={([value]) => 
-              onOptionsChange({ alphaMax: value })
-            }
+            onValueChange={([value]) => onOptionsChange({ alphaMax: value })}
             min={0}
             max={1}
             step={0.1}
             className="w-full"
           />
         </div>
+
         <div>
-          <Label className="mb-2 block">Limiar de Detecção</Label>
+          <ControlTooltip tip="Define o limite entre preto e branco. Ajuste para melhorar a detecção de bordas.">
+            <Label className="mb-2 block">Contraste</Label>
+          </ControlTooltip>
           <Slider
             value={[options.threshold]}
-            onValueChange={([value]) => 
-              onOptionsChange({ threshold: value })
-            }
+            onValueChange={([value]) => onOptionsChange({ threshold: value })}
             min={0}
             max={255}
             step={1}
             className="w-full"
           />
         </div>
+
         <div>
-          <Label className="mb-2 block">Simplificação do Caminho</Label>
+          <ControlTooltip tip="Controla a simplificação do traçado. Valores maiores geram vetores mais simples.">
+            <Label className="mb-2 block">Simplificação</Label>
+          </ControlTooltip>
           <Slider
             value={[options.pathomit]}
-            onValueChange={([value]) => 
-              onOptionsChange({ pathomit: value })
-            }
+            onValueChange={([value]) => onOptionsChange({ pathomit: value })}
             min={0}
             max={20}
             step={1}
             className="w-full"
           />
         </div>
-        <div>
-          <Label className="mb-2 block">Limiar de Linhas</Label>
-          <Slider
-            value={[options.lineThreshold]}
-            onValueChange={([value]) => 
-              onOptionsChange({ lineThreshold: value })
-            }
-            min={0}
-            max={10}
-            step={0.1}
-            className="w-full"
-          />
-        </div>
-        <div>
-          <Label className="mb-2 block">Detecção de Cantos</Label>
-          <Slider
-            value={[options.cornerThreshold]}
-            onValueChange={([value]) => 
-              onOptionsChange({ cornerThreshold: value })
-            }
-            min={0}
-            max={180}
-            step={1}
-            className="w-full"
-          />
-        </div>
       </div>
 
-      <div className="mt-6">
-        <Label className="mb-2 block">Modo de Cor</Label>
+      <div className="mt-4">
+        <ControlTooltip tip="Escolha como as cores serão tratadas no resultado final">
+          <Label className="mb-2 block">Modo de Cor</Label>
+        </ControlTooltip>
         <RadioGroup
           value={options.colorMode}
-          onValueChange={(value: ColorMode) => 
-            onOptionsChange({ colorMode: value })
-          }
+          onValueChange={(value: ColorMode) => onOptionsChange({ colorMode: value })}
           className="flex space-x-4"
         >
           <div className="flex items-center space-x-2">
