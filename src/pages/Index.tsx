@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import VectorPreview from '@/components/VectorPreview';
 import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
+import { ColorMode, VectorOptions } from '@/types/vector';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -15,6 +18,10 @@ const Index = () => {
     text: string[];
     fonts: string[];
   } | null>(null);
+  const [options, setOptions] = useState<VectorOptions>({
+    colorMode: 'color',
+    quality: 1
+  });
   
   const { toast } = useToast();
 
@@ -37,16 +44,25 @@ const Index = () => {
       const result = await Tesseract.recognize(selectedImage, 'por');
       const recognizedText = result.data.paragraphs.map(p => p.text).filter(Boolean);
 
-      // Vector Processing (simplified for demo)
+      // Vector Processing with color options
       const reader = new FileReader();
       reader.onload = () => {
-        potrace.trace(reader.result as string, (err: Error | null, svg: string) => {
+        const params: potrace.Params = {
+          turdSize: 2,
+          alphaMax: 1,
+          optCurve: true,
+          threshold: options.colorMode === 'blackwhite' ? 128 : undefined,
+          blackOnWhite: true,
+          color: options.colorMode === 'grayscale' ? '#666666' : undefined,
+        };
+
+        potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
           
           setVectorResult({
             svg,
             text: recognizedText,
-            fonts: ['Arial', 'Helvetica', 'Times New Roman'] // Simplified font detection
+            fonts: ['Arial', 'Helvetica', 'Times New Roman']
           });
           
           toast({
@@ -82,12 +98,36 @@ const Index = () => {
         <ImageUploader onImageSelect={handleImageSelect} />
 
         {selectedImage && !vectorResult && (
-          <div className="mt-8 text-center">
+          <div className="mt-8">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">Opções de Conversão</h3>
+              <RadioGroup
+                defaultValue={options.colorMode}
+                onValueChange={(value: ColorMode) => 
+                  setOptions(prev => ({ ...prev, colorMode: value }))
+                }
+                className="grid grid-cols-3 gap-4"
+              >
+                <div>
+                  <RadioGroupItem value="color" id="color" />
+                  <Label htmlFor="color" className="ml-2">Colorido</Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="grayscale" id="grayscale" />
+                  <Label htmlFor="grayscale" className="ml-2">Escala de Cinza</Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="blackwhite" id="blackwhite" />
+                  <Label htmlFor="blackwhite" className="ml-2">Preto e Branco</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             <Button
               onClick={processImage}
               disabled={processing}
               size="lg"
-              className="bg-primary hover:bg-primary/90"
+              className="w-full bg-primary hover:bg-primary/90"
             >
               <Wand2 className="w-5 h-5 mr-2" />
               {processing ? 'Processando...' : 'Converter para Vetor'}
@@ -100,6 +140,7 @@ const Index = () => {
             svgContent={vectorResult.svg}
             recognizedText={vectorResult.text}
             detectedFonts={vectorResult.fonts}
+            colorMode={options.colorMode}
           />
         )}
       </div>

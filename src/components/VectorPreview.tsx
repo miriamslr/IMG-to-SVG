@@ -1,20 +1,22 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
+import { ColorMode } from '@/types/vector';
 
 interface VectorPreviewProps {
   svgContent: string;
   recognizedText: string[];
   detectedFonts: string[];
+  colorMode: ColorMode;
 }
 
-const VectorPreview = ({ svgContent, recognizedText, detectedFonts }: VectorPreviewProps) => {
+const VectorPreview = ({ svgContent, recognizedText, detectedFonts, colorMode }: VectorPreviewProps) => {
   const handleDownload = () => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'vector.svg';
+    a.download = `vector-${colorMode}.svg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -25,7 +27,7 @@ const VectorPreview = ({ svgContent, recognizedText, detectedFonts }: VectorPrev
     <div className="w-full max-w-2xl mx-auto mt-8">
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Resultado Vetorial</h3>
+          <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({colorMode})</h3>
           <div className="border rounded-lg p-4 bg-gray-50" dangerouslySetInnerHTML={{ __html: svgContent }} />
         </div>
 
