@@ -44,6 +44,7 @@ const Index = () => {
     setProcessing(true);
     
     try {
+      // OCR Processing
       const worker = await Tesseract.createWorker('por');
       const result = await worker.recognize(file);
       await worker.terminate();
@@ -52,10 +53,15 @@ const Index = () => {
         .map(p => p.text.trim())
         .filter(text => text.length > 0);
 
+      // Image to Vector Processing
       const reader = new FileReader();
       reader.onload = async () => {
         const imageUrl = reader.result as string;
-        const dominantColors = await extractDominantColors(imageUrl, 8);
+        let dominantColors: string[] = [];
+        
+        if (options.colorMode === 'color') {
+          dominantColors = await extractDominantColors(imageUrl, 8);
+        }
 
         potrace.trace(imageUrl, {
           turdSize: options.turdSize,
@@ -63,14 +69,14 @@ const Index = () => {
           threshold: options.threshold,
           optTolerance: options.optTolerance,
           pathomit: options.pathomit,
-        }, (err: Error | null, svg: string) => {
+        }, async (err: Error | null, svg: string) => {
           if (err) throw err;
           
           let processedSvg = svg;
           
           switch (options.colorMode) {
             case 'color':
-              processedSvg = mapColorsToSvgPaths(svg, dominantColors);
+              processedSvg = await mapColorsToSvgPaths(svg, dominantColors);
               break;
             case 'grayscale':
               processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');

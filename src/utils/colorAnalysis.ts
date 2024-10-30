@@ -4,7 +4,6 @@ interface RGB {
   b: number;
 }
 
-// Converte cor RGB para HSL para melhor análise
 const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => {
   r /= 255;
   g /= 255;
@@ -30,7 +29,6 @@ const rgbToHsl = (r: number, g: number, b: number): [number, number, number] => 
   return [h * 360, s * 100, l * 100];
 }
 
-// Extrai cores dominantes de uma imagem
 export const extractDominantColors = async (imageUrl: string, numColors: number = 5): Promise<string[]> => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -49,7 +47,7 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
       const pixels: RGB[] = [];
 
       for (let i = 0; i < imageData.data.length; i += 4) {
-        if (imageData.data[i + 3] > 128) { // Considera apenas pixels não transparentes
+        if (imageData.data[i + 3] > 128) {
           pixels.push({
             r: imageData.data[i],
             g: imageData.data[i + 1],
@@ -58,9 +56,7 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
         }
       }
 
-      // Implementa o algoritmo K-means para clustering de cores
       const kMeans = (pixels: RGB[], k: number): RGB[] => {
-        // Inicializa centroides aleatórios
         let centroids: RGB[] = Array.from({ length: k }, () => ({
           r: Math.floor(Math.random() * 256),
           g: Math.floor(Math.random() * 256),
@@ -69,10 +65,8 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
 
         const maxIterations = 20;
         let iteration = 0;
-        let oldCentroids: RGB[] = [];
 
         while (iteration < maxIterations) {
-          // Agrupa pixels por centroide mais próximo
           const clusters: RGB[][] = Array.from({ length: k }, () => []);
           
           pixels.forEach(pixel => {
@@ -94,8 +88,7 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
             clusters[closestCentroid].push(pixel);
           });
 
-          // Atualiza centroides
-          oldCentroids = [...centroids];
+          const oldCentroids = [...centroids];
           clusters.forEach((cluster, i) => {
             if (cluster.length > 0) {
               const avgColor = cluster.reduce(
@@ -110,7 +103,6 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
             }
           });
 
-          // Verifica convergência
           const centroidsMoved = centroids.some((centroid, i) => 
             Math.abs(centroid.r - oldCentroids[i].r) > 1 ||
             Math.abs(centroid.g - oldCentroids[i].g) > 1 ||
@@ -124,10 +116,7 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
         return centroids;
       };
 
-      // Obtém as cores dominantes
       const dominantColors = kMeans(pixels, numColors);
-
-      // Converte cores RGB para formato hexadecimal
       const colorHexes = dominantColors.map(color => {
         const r = Math.round(color.r).toString(16).padStart(2, '0');
         const g = Math.round(color.g).toString(16).padStart(2, '0');
@@ -142,11 +131,9 @@ export const extractDominantColors = async (imageUrl: string, numColors: number 
   });
 };
 
-// Mapeia cores para os paths do SVG baseado em luminosidade
-export const mapColorsToSvgPaths = (svg: string, colors: string[]): string => {
+export const mapColorsToSvgPaths = async (svg: string, colors: string[]): Promise<string> => {
   if (colors.length === 0) return svg;
 
-  // Ordena cores por luminosidade
   const sortedColors = [...colors].sort((a, b) => {
     const [, , l1] = rgbToHsl(
       parseInt(a.slice(1, 3), 16),
@@ -158,10 +145,9 @@ export const mapColorsToSvgPaths = (svg: string, colors: string[]): string => {
       parseInt(b.slice(3, 5), 16),
       parseInt(b.slice(5, 7), 16)
     );
-    return l1 - l2;
+    return l2 - l1;
   });
 
-  // Substitui cores nos paths do SVG
   let pathIndex = 0;
   return svg.replace(/<path([^>]*)>/g, (match, attrs) => {
     const color = sortedColors[pathIndex % sortedColors.length];
