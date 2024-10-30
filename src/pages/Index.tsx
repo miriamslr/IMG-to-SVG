@@ -23,7 +23,7 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    colorMode: 'color' as ColorMode, // Definindo 'color' como padrão
+    colorMode: 'color' as ColorMode,
     quality: 1,
     turdSize: 2,
     alphaMax: 1,
@@ -37,17 +37,6 @@ const Index = () => {
   });
   
   const { toast } = useToast();
-
-  const handleImageSelect = async (file: File) => {
-    setSelectedImage(file);
-    
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-      processImage(file);
-    };
-    reader.readAsDataURL(file);
-  };
 
   const processImage = async (file: File | null = selectedImage) => {
     if (!file) return;
@@ -68,17 +57,13 @@ const Index = () => {
         const imageUrl = reader.result as string;
         const dominantColors = await extractDominantColors(imageUrl, 8);
 
-        const params: potrace.Params = {
+        potrace.trace(imageUrl, {
           turdSize: options.turdSize,
           alphaMax: options.alphaMax,
-          optCurve: true,
           threshold: options.threshold,
-          blackOnWhite: true,
           optTolerance: options.optTolerance,
           pathomit: options.pathomit,
-        };
-
-        potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
+        }, (err: Error | null, svg: string) => {
           if (err) throw err;
           
           let processedSvg = svg;
@@ -104,6 +89,8 @@ const Index = () => {
             text: recognizedText,
             fonts: detectedFonts
           });
+          
+          setProcessing(false);
         });
       };
       reader.readAsDataURL(file);
@@ -113,9 +100,18 @@ const Index = () => {
         description: "Ocorreu um erro ao processar sua imagem.",
         variant: "destructive"
       });
-    } finally {
       setProcessing(false);
     }
+  };
+
+  const handleImageSelect = async (file: File) => {
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result as string);
+      processImage(file);
+    };
+    reader.readAsDataURL(file);
   };
 
   const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
