@@ -1,4 +1,4 @@
-import { Jimp } from 'jimp';
+import Jimp from 'jimp';
 
 export interface ImageAdjustments {
   brightness: number;
@@ -49,7 +49,7 @@ export const processImageAdjustments = async (
 
   // Convert to base64 using callback pattern
   return new Promise((resolve, reject) => {
-    image.getBuffer(Jimp.MIME_PNG, (err, buffer) => {
+    image.getBuffer('image/png', (err, buffer) => {
       if (err) reject(err);
       const base64 = `data:image/png;base64,${buffer.toString('base64')}`;
       resolve(base64);
