@@ -4,6 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Index from "./pages/Index";
+import Vectorizer from "./pages/Vectorizer";
+import ImageTracer from "./pages/ImageTracer";
+import SVGcode from "./pages/SVGcode";
 import { Button } from "./components/ui/button";
 
 const queryClient = new QueryClient();
@@ -35,23 +38,13 @@ const App = () => (
         
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/vectorizer" element={<ComingSoon name="Vectorizer.js" />} />
-          <Route path="/imagetracer" element={<ComingSoon name="ImageTracer" />} />
-          <Route path="/svgcode" element={<ComingSoon name="SVGcode" />} />
+          <Route path="/vectorizer" element={<Vectorizer />} />
+          <Route path="/imagetracer" element={<ImageTracer />} />
+          <Route path="/svgcode" element={<SVGcode />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
-
-// Componente temporário para páginas em desenvolvimento
-const ComingSoon = ({ name }: { name: string }) => (
-  <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">{name}</h1>
-      <p className="text-gray-600">Esta página está em desenvolvimento.</p>
-    </div>
-  </div>
 );
 
 export default App;
