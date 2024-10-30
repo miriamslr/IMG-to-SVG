@@ -40,9 +40,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
-  const scale = containerRef.current 
-    ? Math.min(0.5, containerRef.current.clientWidth / dimensions.width)
-    : 0.5;
+  const containerWidth = containerRef.current?.clientWidth || 0;
+  const containerHeight = containerRef.current?.clientHeight || 0;
+  const scale = Math.min(
+    (containerWidth - 32) / dimensions.width,
+    (containerHeight - 32) / dimensions.height,
+    1
+  );
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -60,21 +64,21 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`
     } : {};
 
+    const imageContainerStyle = {
+      width: dimensions.width * contentScale,
+      height: dimensions.height * contentScale,
+      margin: 'auto'
+    };
+
     return (
-      <div 
-        className="relative border rounded-lg overflow-hidden bg-white mx-auto h-full"
-        style={{
-          width: '100%',
-          maxWidth: dimensions.width * contentScale
-        }}
-      >
-        <div className="absolute inset-0 flex items-center justify-center">
+      <div className="relative border rounded-lg overflow-hidden bg-white h-full flex items-center justify-center">
+        <div style={imageContainerStyle} className="relative">
           {/* SVG Container */}
           <div 
             className="absolute inset-0"
             style={{ 
               transform: `scale(${contentScale})`,
-              transformOrigin: 'center',
+              transformOrigin: 'top left',
               ...zoomStyle
             }}
           >
@@ -93,7 +97,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             style={{
               clipPath: `inset(0 ${100 - position}% 0 0)`,
               transform: `scale(${contentScale})`,
-              transformOrigin: 'center',
+              transformOrigin: 'top left',
               ...zoomStyle
             }}
           >
@@ -103,8 +107,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
               style={{
                 width: dimensions.width,
                 height: dimensions.height,
-                display: 'block',
-                objectFit: 'contain'
+                display: 'block'
               }}
             />
           </div>
