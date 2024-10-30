@@ -16,7 +16,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       const img = new Image();
       img.onload = () => {
         const aspectRatio = img.naturalHeight / img.naturalWidth;
-        const maxWidth = Math.min(800, window.innerWidth - 32);
+        const maxWidth = Math.min(600, window.innerWidth - 32); // Reduzido de 800 para 600
         const width = maxWidth;
         const height = width * aspectRatio;
         
@@ -30,7 +30,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
+    `<svg width="100%" height="100%" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
   return (
@@ -39,18 +39,17 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         ref={containerRef}
         className="relative border rounded-lg overflow-hidden bg-white mx-auto"
         style={{
-          width: dimensions.width,
-          height: dimensions.height,
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: dimensions.width,
           aspectRatio: dimensions.width / dimensions.height
         }}
       >
-        <div className="absolute inset-0">
-          <div dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} />
+        <div className="absolute inset-0 w-full h-full">
+          <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} />
         </div>
         
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 w-full h-full"
           style={{
             clipPath: `inset(0 ${100 - position}% 0 0)`,
             transition: 'clip-path 0.1s ease-out'
