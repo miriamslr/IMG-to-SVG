@@ -75,7 +75,10 @@ const VectorPreview = ({
       let filename: string;
 
       if (raphaelRef.current) {
-        const svgData = raphaelRef.current.toSVG();
+        // Get the SVG content from the container element
+        const svgElement = vectorRef.current?.querySelector('svg');
+        const svgData = svgElement ? svgElement.outerHTML : '';
+
         switch (format) {
           case 'svg':
             blob = new Blob([svgData], { type: 'image/svg+xml' });
