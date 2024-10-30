@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import VectorControls from '@/components/VectorControls';
+import ImageComparison from '@/components/ImageComparison';
+import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
 import { Wand2, AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
 import { ColorMode } from '@/types/vector';
-import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Index = () => {
@@ -109,7 +110,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1600px] mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Conversor de Imagem para Vetor
@@ -134,66 +135,23 @@ const Index = () => {
         {!selectedImage ? (
           <ImageUploader onImageSelect={handleImageSelect} />
         ) : (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card className="p-4">
-                <h3 className="text-lg font-semibold mb-2">Imagem Original</h3>
-                <div className="relative aspect-square">
-                  {imagePreview && (
-                    <img 
-                      src={imagePreview} 
-                      alt="Original" 
-                      className="absolute inset-0 w-full h-full object-contain"
-                    />
-                  )}
-                </div>
-              </Card>
-              
-              <Card className="p-4">
-                <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({options.colorMode})</h3>
-                <div className="relative aspect-square bg-gray-50">
-                  {vectorResult && (
-                    <div 
-                      className="absolute inset-0 w-full h-full flex items-center justify-center p-4"
-                      dangerouslySetInnerHTML={{ __html: vectorResult.svg }} 
-                    />
-                  )}
-                </div>
-              </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6">
+            <div className="space-y-6">
+              <ImageComparison 
+                originalImage={imagePreview} 
+                vectorImage={vectorResult?.svg || ''}
+              />
+              <RecognitionResults
+                recognizedText={vectorResult?.text || []}
+                detectedFonts={vectorResult?.fonts || []}
+              />
             </div>
-
-            <VectorControls 
-              options={options}
-              onOptionsChange={updateOptionsAndProcess}
-            />
-
-            {vectorResult && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {vectorResult.text.length > 0 && (
-                  <Card className="p-4">
-                    <h3 className="text-lg font-semibold mb-2">Texto Reconhecido</h3>
-                    <div className="space-y-2">
-                      {vectorResult.text.map((text, index) => (
-                        <p key={index} className="text-gray-700">{text}</p>
-                      ))}
-                    </div>
-                  </Card>
-                )}
-
-                {vectorResult.fonts.length > 0 && (
-                  <Card className="p-4">
-                    <h3 className="text-lg font-semibold mb-2">Fontes Detectadas</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {vectorResult.fonts.map((font, index) => (
-                        <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-                          {font}
-                        </span>
-                      ))}
-                    </div>
-                  </Card>
-                )}
-              </div>
-            )}
+            <div>
+              <VectorControls 
+                options={options}
+                onOptionsChange={updateOptionsAndProcess}
+              />
+            </div>
           </div>
         )}
       </div>
