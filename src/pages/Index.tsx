@@ -71,7 +71,7 @@ const Index = () => {
           blackOnWhite: true,
           color: options.colorMode === 'grayscale' ? '#666666' : 
                  options.colorMode === 'blackwhite' ? '#000000' : undefined,
-          background: options.colorMode === 'color' ? 'transparent' : '#FFFFFF',
+          background: '#FFFFFF',
           fillStrategy: options.colorMode === 'color' ? 'dominant' : 'fixed',
           rangeDistribution: options.colorMode === 'color' ? 'auto' : 'none',
           optTolerance: options.optTolerance,
@@ -81,10 +81,17 @@ const Index = () => {
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
           
-          // Se estiver no modo colorido, preserva as cores originais
+          // Ajusta o SVG baseado no modo de cor
           if (options.colorMode === 'color') {
+            // Remove qualquer preenchimento existente e preserva as cores originais
             svg = svg.replace(/fill="[^"]*"/g, '');
-            svg = svg.replace(/<path/g, '<path fill="currentColor"');
+            svg = svg.replace(/<path/g, '<path fill="auto"');
+          } else if (options.colorMode === 'grayscale') {
+            // Aplica tons de cinza
+            svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
+          } else if (options.colorMode === 'blackwhite') {
+            // Garante que seja preto puro
+            svg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
           }
           
           const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
