@@ -40,7 +40,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
-  // Reduzimos o fator de escala para 0.5 (50% do tamanho original)
   const scale = containerRef.current 
     ? Math.min(0.5, containerRef.current.clientWidth / dimensions.width)
     : 0.5;
@@ -61,52 +60,57 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`
     } : {};
 
+    const containerHeight = isZoomed ? 'auto' : 'calc(100vh - 8rem - 120px)';
+
     return (
       <div 
         className="relative border rounded-lg overflow-hidden bg-white mx-auto"
         style={{
           width: '100%',
-          height: dimensions.height * contentScale,
+          height: containerHeight,
           maxWidth: dimensions.width * contentScale
         }}
       >
-        {/* SVG Container */}
-        <div 
-          className="absolute inset-0"
-          style={{ 
-            transform: `scale(${contentScale})`,
-            transformOrigin: 'top left',
-            ...zoomStyle
-          }}
-        >
+        <div className="absolute inset-0 flex items-center justify-center">
+          {/* SVG Container */}
           <div 
+            className="absolute inset-0"
             style={{ 
-              width: dimensions.width,
-              height: dimensions.height
+              transform: `scale(${contentScale})`,
+              transformOrigin: 'center',
+              ...zoomStyle
             }}
-            dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
-          />
-        </div>
-        
-        {/* Original Image Container */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            clipPath: `inset(0 ${100 - position}% 0 0)`,
-            transform: `scale(${contentScale})`,
-            transformOrigin: 'top left',
-            ...zoomStyle
-          }}
-        >
-          <img 
-            src={originalImage} 
-            alt="Original"
+          >
+            <div 
+              style={{ 
+                width: dimensions.width,
+                height: dimensions.height
+              }}
+              dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
+            />
+          </div>
+          
+          {/* Original Image Container */}
+          <div 
+            className="absolute inset-0"
             style={{
-              width: dimensions.width,
-              height: dimensions.height,
-              display: 'block'
+              clipPath: `inset(0 ${100 - position}% 0 0)`,
+              transform: `scale(${contentScale})`,
+              transformOrigin: 'center',
+              ...zoomStyle
             }}
-          />
+          >
+            <img 
+              src={originalImage} 
+              alt="Original"
+              style={{
+                width: dimensions.width,
+                height: dimensions.height,
+                display: 'block',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
         </div>
 
         <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
@@ -120,10 +124,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-[calc(100vh-8rem)]">
       <div 
         ref={containerRef} 
-        className="relative group cursor-zoom-in"
+        className="relative group cursor-zoom-in h-[calc(100%-40px)]"
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -147,7 +151,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         </Dialog>
       </div>
 
-      <div className="px-4 w-full max-w-md mx-auto">
+      <div className="px-4 w-full max-w-md mx-auto h-[40px] flex items-center">
         <Slider
           value={[position]}
           onValueChange={([value]) => setPosition(value)}
