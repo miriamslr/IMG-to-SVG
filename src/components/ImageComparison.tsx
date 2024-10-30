@@ -16,18 +16,31 @@ interface ImageComparisonProps {
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [imageNaturalDimensions, setImageNaturalDimensions] = useState({ width: 0, height: 0 });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   
   useEffect(() => {
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
+        // Dimensões totais do arquivo
         setDimensions({
-          width: img.naturalWidth,
-          height: img.naturalHeight
+          width: img.width,
+          height: img.height
         });
+        
+        // Dimensões reais da imagem (sem espaços em branco)
+        if (imageRef.current) {
+          const naturalWidth = imageRef.current.naturalWidth;
+          const naturalHeight = imageRef.current.naturalHeight;
+          setImageNaturalDimensions({
+            width: naturalWidth,
+            height: naturalHeight
+          });
+        }
       };
       img.src = originalImage;
     }
@@ -37,7 +50,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
   );
 
   const containerWidth = containerRef.current?.clientWidth || 0;
@@ -67,12 +80,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     const imageContainerStyle = {
       width: dimensions.width * contentScale,
       height: dimensions.height * contentScale,
-      margin: 'auto'
+      margin: 'auto',
+      position: 'relative' as const
     };
 
     return (
       <div className="relative border rounded-lg overflow-hidden bg-white h-full flex items-center justify-center">
-        <div style={imageContainerStyle} className="relative">
+        <div style={imageContainerStyle}>
           {/* SVG Container */}
           <div 
             className="absolute inset-0"
@@ -85,7 +99,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             <div 
               style={{ 
                 width: dimensions.width,
-                height: dimensions.height
+                height: dimensions.height,
+                position: 'absolute',
+                top: 0,
+                left: 0
               }}
               dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
             />
@@ -102,12 +119,16 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             }}
           >
             <img 
+              ref={imageRef}
               src={originalImage} 
               alt="Original"
               style={{
                 width: dimensions.width,
                 height: dimensions.height,
-                display: 'block'
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                left: 0
               }}
             />
           </div>
