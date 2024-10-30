@@ -21,7 +21,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         
         setDimensions({
           width: containerWidth,
-          height: calculatedHeight
+          height: Math.min(calculatedHeight, window.innerHeight * 0.7)
         });
       };
       img.src = originalImage;
@@ -32,7 +32,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="100%" height="100%" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}">`
   );
 
   return (
@@ -41,9 +41,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       className="relative w-full border rounded-lg overflow-hidden bg-white"
       style={{ height: dimensions.height }}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div 
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ width: dimensions.width, height: dimensions.height }}
+      >
         <div 
           className="w-full h-full"
+          style={{ width: dimensions.width, height: dimensions.height }}
           dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
         />
       </div>
@@ -52,13 +56,19 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         className="absolute inset-0 flex items-center justify-center"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
-          transition: 'clip-path 0.1s ease-out'
+          transition: 'clip-path 0.1s ease-out',
+          width: dimensions.width,
+          height: dimensions.height
         }}
       >
         <img 
           src={originalImage} 
           alt="Original"
-          className="w-full h-full object-contain"
+          style={{
+            width: dimensions.width,
+            height: dimensions.height,
+            objectFit: 'fill'
+          }}
         />
       </div>
 
