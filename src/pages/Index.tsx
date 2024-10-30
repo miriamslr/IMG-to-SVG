@@ -9,7 +9,7 @@ import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
 import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { extractDominantColors, mapColorsToSvgPaths } from '@/utils/colorAnalysis'; // Import the new utility
+import { extractDominantColors, mapColorsToSvgPaths } from '@/utils/colorAnalysis';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -73,11 +73,6 @@ const Index = () => {
           optCurve: true,
           threshold: options.threshold,
           blackOnWhite: true,
-          color: options.colorMode === 'grayscale' ? '#666666' : 
-                 options.colorMode === 'blackwhite' ? '#000000' : undefined,
-          background: 'transparent',
-          fillStrategy: options.colorMode === 'color' ? 'dominant' : 'fixed',
-          rangeDistribution: options.colorMode === 'color' ? 'auto' : 'none',
           optTolerance: options.optTolerance,
           pathomit: options.pathomit,
         };
@@ -85,12 +80,18 @@ const Index = () => {
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
           
-          if (options.colorMode === 'color') {
-            svg = mapColorsToSvgPaths(svg, dominantColors);
-          } else if (options.colorMode === 'grayscale') {
-            svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
-          } else if (options.colorMode === 'blackwhite') {
-            svg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
+          let processedSvg = svg;
+          
+          switch (options.colorMode) {
+            case 'color':
+              processedSvg = mapColorsToSvgPaths(svg, dominantColors);
+              break;
+            case 'grayscale':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
+              break;
+            case 'blackwhite':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
+              break;
           }
           
           const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
@@ -98,7 +99,7 @@ const Index = () => {
           );
           
           setVectorResult({
-            svg,
+            svg: processedSvg,
             text: recognizedText,
             fonts: detectedFonts
           });
