@@ -7,21 +7,23 @@ import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle } from 'lucide-react';
 
+interface VectorOptions {
+  colorMode: ColorMode;
+  quality: number;
+  turdSize: number;
+  alphaMax: number;
+  threshold: number;
+  optTolerance: number;
+  pathomit: number;
+  lineThreshold: number;
+  cornerThreshold: number;
+  smoothing: number;
+  optimizePaths: number;
+}
+
 interface VectorControlsProps {
-  options: {
-    colorMode: ColorMode;
-    quality: number;
-    turdSize: number;
-    alphaMax: number;
-    threshold: number;
-    optTolerance: number;
-    pathomit: number;
-    lineThreshold: number;
-    cornerThreshold: number;
-    smoothing: number;
-    optimizePaths: number;
-  };
-  onOptionsChange: (newOptions: Partial<typeof options>) => void;
+  options: VectorOptions;
+  onOptionsChange: (newOptions: Partial<VectorOptions>) => void;
 }
 
 const ControlTooltip = ({ tip, children }: { tip: string; children: React.ReactNode }) => (
