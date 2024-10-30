@@ -16,6 +16,8 @@ interface ImageComparisonProps {
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -38,70 +40,94 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
+  // Reduzimos o fator de escala para 0.5 (50% do tamanho original)
   const scale = containerRef.current 
-    ? Math.min(1, containerRef.current.clientWidth / dimensions.width)
-    : 1;
+    ? Math.min(0.5, containerRef.current.clientWidth / dimensions.width)
+    : 0.5;
 
-  const PreviewContent = () => (
-    <div 
-      className="relative border rounded-lg overflow-hidden bg-white mx-auto"
-      style={{
-        width: '100%',
-        height: dimensions.height * scale,
-        maxWidth: dimensions.width
-      }}
-    >
-      {/* SVG Container */}
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePosition({
+      x: (e.clientX - rect.left) / scale,
+      y: (e.clientY - rect.top) / scale
+    });
+  };
+
+  const PreviewContent = ({ isZoomed = false }: { isZoomed?: boolean }) => {
+    const contentScale = isZoomed ? 1 : scale;
+    const zoomStyle = isHovering && !isZoomed ? {
+      transform: `scale(2)`,
+      transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`
+    } : {};
+
+    return (
       <div 
-        className="absolute inset-0"
-        style={{ 
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          width: dimensions.width,
-          height: dimensions.height
-        }}
-      >
-        <div 
-          style={{ 
-            width: dimensions.width,
-            height: dimensions.height
-          }}
-          dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
-        />
-      </div>
-      
-      {/* Original Image Container */}
-      <div 
-        className="absolute inset-0"
+        className="relative border rounded-lg overflow-hidden bg-white mx-auto"
         style={{
-          clipPath: `inset(0 ${100 - position}% 0 0)`,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left'
+          width: '100%',
+          height: dimensions.height * contentScale,
+          maxWidth: dimensions.width * contentScale
         }}
       >
-        <img 
-          src={originalImage} 
-          alt="Original"
-          style={{
-            width: dimensions.width,
-            height: dimensions.height,
-            display: 'block'
+        {/* SVG Container */}
+        <div 
+          className="absolute inset-0"
+          style={{ 
+            transform: `scale(${contentScale})`,
+            transformOrigin: 'top left',
+            ...zoomStyle
           }}
-        />
-      </div>
+        >
+          <div 
+            style={{ 
+              width: dimensions.width,
+              height: dimensions.height
+            }}
+            dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
+          />
+        </div>
+        
+        {/* Original Image Container */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            clipPath: `inset(0 ${100 - position}% 0 0)`,
+            transform: `scale(${contentScale})`,
+            transformOrigin: 'top left',
+            ...zoomStyle
+          }}
+        >
+          <img 
+            src={originalImage} 
+            alt="Original"
+            style={{
+              width: dimensions.width,
+              height: dimensions.height,
+              display: 'block'
+            }}
+          />
+        </div>
 
-      <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-        Original
+        <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+          Original
+        </div>
+        <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+          Vetorizado
+        </div>
       </div>
-      <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-        Vetorizado
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-4">
-      <div ref={containerRef} className="relative group">
+      <div 
+        ref={containerRef} 
+        className="relative group cursor-zoom-in"
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <PreviewContent />
         <Dialog>
           <DialogTrigger asChild>
@@ -115,7 +141,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           </DialogTrigger>
           <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-auto">
             <div className="w-full h-full flex items-center justify-center">
-              <PreviewContent />
+              <PreviewContent isZoomed={true} />
             </div>
           </DialogContent>
         </Dialog>
