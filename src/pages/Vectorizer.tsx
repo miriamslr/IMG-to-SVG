@@ -4,11 +4,10 @@ import VectorControls from '@/components/VectorControls';
 import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ColorMode } from '@/types/vector';
+import Vectorizer from 'vectorizer';
 
-const Vectorizer = () => {
+const VectorizerPage = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -39,19 +38,45 @@ const Vectorizer = () => {
 
     setProcessing(true);
     try {
-      // Aqui implementaremos a lógica do Vectorizer.js
-      toast({
-        title: "Em breve",
-        description: "A integração com Vectorizer.js será implementada em breve.",
-        variant: "destructive"
-      });
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          
+          const vectorizer = new Vectorizer({
+            quality: options.quality,
+            threshold: options.threshold,
+            colorMode: options.colorMode,
+            smoothing: options.smoothing
+          });
+
+          const svgString = vectorizer.vectorize(imageData);
+
+          setVectorResult({
+            svg: svgString,
+            text: [],
+            fonts: []
+          });
+          setProcessing(false);
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       toast({
         title: "Erro no processamento",
         description: "Ocorreu um erro ao processar sua imagem.",
         variant: "destructive"
       });
-    } finally {
       setProcessing(false);
     }
   };
@@ -77,13 +102,6 @@ const Vectorizer = () => {
             Transforme suas imagens em vetores usando Vectorizer.js
           </p>
         </div>
-
-        <Alert className="mb-4 max-w-3xl mx-auto">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Esta página está em desenvolvimento. A integração com Vectorizer.js será implementada em breve.
-          </AlertDescription>
-        </Alert>
 
         {!selectedImage ? (
           <ImageUploader onImageSelect={handleImageSelect} />
@@ -120,4 +138,4 @@ const Vectorizer = () => {
   );
 };
 
-export default Vectorizer;
+export default VectorizerPage;

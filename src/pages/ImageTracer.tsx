@@ -52,7 +52,6 @@ const ImageTracerPage = () => {
 
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           
-          // Configurações do ImageTracer
           const tracerOptions = {
             ltres: options.lineThreshold,
             qtres: options.quality,
@@ -69,9 +68,7 @@ const ImageTracerPage = () => {
             pal: options.colorMode === 'blackwhite' ? [[0,0,0],[255,255,255]] : undefined
           };
 
-          // Usando a API correta do ImageTracer
-          const tracer = new ImageTracer();
-          const svgString = tracer.imagedataToSVG(imageData, tracerOptions);
+          const svgString = ImageTracer.imageToSVG(canvas, tracerOptions);
 
           setVectorResult({
             svg: svgString,
