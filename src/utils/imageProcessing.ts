@@ -1,10 +1,11 @@
-import { cleanupSVG, runSVGO, parseColors } from '@iconify/tools';
+import { SVG, cleanupSVG, runSVGO, parseColors } from '@iconify/tools';
 import { svg2png } from 'svg-png-converter';
 import * as potrace from 'potrace';
 import { ColorMode } from '@/types/vector';
 
 export const optimizeSVG = async (svgString: string): Promise<string> => {
-  const svg = await cleanupSVG(svgString);
+  const svg = new SVG(svgString);
+  await cleanupSVG(svg);
   await runSVGO(svg);
   await parseColors(svg);
   return svg.toString();
