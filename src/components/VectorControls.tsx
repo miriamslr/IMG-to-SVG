@@ -23,9 +23,10 @@ interface VectorOptions {
 interface VectorControlsProps {
   options: VectorOptions;
   onOptionsChange: (newOptions: Partial<VectorOptions>) => void;
+  isProcessing: boolean;
 }
 
-const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
+const VectorControls = ({ options, onOptionsChange, isProcessing }: VectorControlsProps) => {
   return (
     <Card className="p-6 shadow-lg border-2">
       <h3 className="text-xl font-semibold mb-6 text-center">Opções de Conversão</h3>
@@ -34,6 +35,7 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
         <ColorModeSelector
           value={options.colorMode}
           onChange={(value) => onOptionsChange({ colorMode: value })}
+          isProcessing={isProcessing}
         />
 
         <Separator className="my-6" />

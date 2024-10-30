@@ -165,6 +165,7 @@ const Index = () => {
               <VectorControls 
                 options={options}
                 onOptionsChange={updateOptionsAndProcess}
+                isProcessing={processing}
               />
             </div>
           </div>
