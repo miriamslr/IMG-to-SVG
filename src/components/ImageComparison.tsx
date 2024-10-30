@@ -9,7 +9,6 @@ interface ImageComparisonProps {
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [imageNaturalDimensions, setImageNaturalDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
@@ -17,21 +16,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        // Dimensões totais do arquivo
         setDimensions({
           width: img.width,
           height: img.height
         });
-        
-        // Dimensões reais da imagem (sem espaços em branco)
-        if (imageRef.current) {
-          const naturalWidth = imageRef.current.naturalWidth;
-          const naturalHeight = imageRef.current.naturalHeight;
-          setImageNaturalDimensions({
-            width: naturalWidth,
-            height: naturalHeight
-          });
-        }
       };
       img.src = originalImage;
     }
@@ -39,9 +27,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   
   if (!originalImage) return null;
 
+  // Ajusta o SVG para usar as dimensões exatas do arquivo original
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}">`
   );
 
   const containerWidth = containerRef.current?.clientWidth || 0;
@@ -52,59 +41,54 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     1
   );
 
-  const PreviewContent = () => {
-    const imageContainerStyle = {
-      width: dimensions.width * scale,
-      height: dimensions.height * scale,
-      margin: 'auto',
-      position: 'relative' as const
-    };
-
-    return (
-      <div className="relative border rounded-lg overflow-hidden bg-white h-full flex items-center justify-center">
-        <div style={imageContainerStyle}>
-          {/* SVG Container */}
+  return (
+    <div className="h-[calc(100vh-8rem)] flex flex-col">
+      <div 
+        ref={containerRef} 
+        className="relative flex-1 min-h-0 bg-[url('/grid.png')]"
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
           <div 
-            className="absolute inset-0"
-            style={{ 
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left'
+            style={{
+              width: dimensions.width * scale,
+              height: dimensions.height * scale,
+              position: 'relative'
             }}
           >
+            {/* SVG Container */}
             <div 
               style={{ 
-                width: dimensions.width,
-                height: dimensions.height,
+                width: '100%',
+                height: '100%',
                 position: 'absolute',
                 top: 0,
                 left: 0
               }}
               dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
             />
-          </div>
-          
-          {/* Original Image Container */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              clipPath: `inset(0 ${100 - position}% 0 0)`,
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left'
-            }}
-          >
-            <img 
-              ref={imageRef}
-              src={originalImage} 
-              alt="Original"
+            
+            {/* Original Image Container */}
+            <div 
               style={{
-                width: dimensions.width,
-                height: dimensions.height,
-                display: 'block',
+                width: '100%',
+                height: '100%',
                 position: 'absolute',
                 top: 0,
-                left: 0
+                left: 0,
+                clipPath: `inset(0 ${100 - position}% 0 0)`
               }}
-            />
+            >
+              <img 
+                ref={imageRef}
+                src={originalImage} 
+                alt="Original"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'fill'
+                }}
+              />
+            </div>
           </div>
         </div>
 
@@ -114,17 +98,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
           Vetorizado
         </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
-      <div 
-        ref={containerRef} 
-        className="relative flex-1 min-h-0"
-      >
-        <PreviewContent />
       </div>
 
       <div className="h-[60px] px-4 w-full max-w-md mx-auto flex items-center">
