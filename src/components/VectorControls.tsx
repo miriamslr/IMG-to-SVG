@@ -3,12 +3,17 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ColorMode, VectorOptions } from '@/types/vector';
+import { Card } from '@/components/ui/card';
 
 type ExtendedVectorOptions = VectorOptions & {
   turdSize: number;
   alphaMax: number;
   threshold: number;
   pathomit: number;
+  lineThreshold: number;
+  cornerThreshold: number;
+  smoothing: number;
+  optimizePaths: number;
 };
 
 interface VectorControlsProps {
@@ -18,8 +23,9 @@ interface VectorControlsProps {
 
 const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-6">
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-6">Opções de Conversão</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <Label className="mb-2 block">Tamanho Mínimo dos Objetos</Label>
           <Slider
@@ -46,9 +52,6 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
             className="w-full"
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
         <div>
           <Label className="mb-2 block">Limiar de Detecção</Label>
           <Slider
@@ -75,29 +78,58 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
             className="w-full"
           />
         </div>
+        <div>
+          <Label className="mb-2 block">Limiar de Linhas</Label>
+          <Slider
+            value={[options.lineThreshold]}
+            onValueChange={([value]) => 
+              onOptionsChange({ lineThreshold: value })
+            }
+            min={0}
+            max={10}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <Label className="mb-2 block">Detecção de Cantos</Label>
+          <Slider
+            value={[options.cornerThreshold]}
+            onValueChange={([value]) => 
+              onOptionsChange({ cornerThreshold: value })
+            }
+            min={0}
+            max={180}
+            step={1}
+            className="w-full"
+          />
+        </div>
       </div>
 
-      <RadioGroup
-        value={options.colorMode}
-        onValueChange={(value: ColorMode) => 
-          onOptionsChange({ colorMode: value })
-        }
-        className="grid grid-cols-3 gap-4"
-      >
-        <div>
-          <RadioGroupItem value="color" id="color" />
-          <Label htmlFor="color" className="ml-2">Colorido</Label>
-        </div>
-        <div>
-          <RadioGroupItem value="grayscale" id="grayscale" />
-          <Label htmlFor="grayscale" className="ml-2">Escala de Cinza</Label>
-        </div>
-        <div>
-          <RadioGroupItem value="blackwhite" id="blackwhite" />
-          <Label htmlFor="blackwhite" className="ml-2">Preto e Branco</Label>
-        </div>
-      </RadioGroup>
-    </div>
+      <div className="mt-6">
+        <Label className="mb-2 block">Modo de Cor</Label>
+        <RadioGroup
+          value={options.colorMode}
+          onValueChange={(value: ColorMode) => 
+            onOptionsChange({ colorMode: value })
+          }
+          className="flex space-x-4"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="color" id="color" />
+            <Label htmlFor="color">Colorido</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="grayscale" id="grayscale" />
+            <Label htmlFor="grayscale">Escala de Cinza</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="blackwhite" id="blackwhite" />
+            <Label htmlFor="blackwhite">Preto e Branco</Label>
+          </div>
+        </RadioGroup>
+      </div>
+    </Card>
   );
 };
 

@@ -8,6 +8,7 @@ import { Wand2 } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
 import { ColorMode, VectorOptions } from '@/types/vector';
+import { Card } from '@/components/ui/card';
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -18,37 +19,36 @@ const Index = () => {
     text: string[];
     fonts: string[];
   } | null>(null);
-  const [options, setOptions] = useState<VectorOptions & {
-    turdSize: number;
-    alphaMax: number;
-    threshold: number;
-    optTolerance: number;
-    pathomit: number;
-  }>({
-    colorMode: 'color',
+  
+  const [options, setOptions] = useState({
+    colorMode: 'color' as ColorMode,
     quality: 1,
     turdSize: 2,
     alphaMax: 1,
     threshold: 128,
     optTolerance: 0.2,
-    pathomit: 8
+    pathomit: 8,
+    lineThreshold: 1,
+    cornerThreshold: 90,
+    smoothing: 1,
+    optimizePaths: 1
   });
   
   const { toast } = useToast();
 
-  const handleImageSelect = (file: File) => {
+  const handleImageSelect = async (file: File) => {
     setSelectedImage(file);
-    setVectorResult(null);
     
     const reader = new FileReader();
     reader.onload = () => {
       setImagePreview(reader.result as string);
+      processImage(file);
     };
     reader.readAsDataURL(file);
   };
 
-  const processImage = async () => {
-    if (!selectedImage) return;
+  const processImage = async (file: File | null = selectedImage) => {
+    if (!file) return;
 
     setProcessing(true);
     toast({
@@ -58,7 +58,7 @@ const Index = () => {
 
     try {
       const worker = await Tesseract.createWorker('por');
-      const result = await worker.recognize(selectedImage);
+      const result = await worker.recognize(file);
       await worker.terminate();
 
       const recognizedText = result.data.paragraphs
@@ -100,7 +100,7 @@ const Index = () => {
           });
         });
       };
-      reader.readAsDataURL(selectedImage);
+      reader.readAsDataURL(file);
     } catch (error) {
       toast({
         title: "Erro no processamento",
@@ -114,14 +114,12 @@ const Index = () => {
 
   const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
     setOptions(prev => ({ ...prev, ...newOptions }));
-    if (selectedImage) {
-      processImage();
-    }
+    processImage();
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Conversor de Imagem para Vetor
@@ -131,40 +129,66 @@ const Index = () => {
           </p>
         </div>
 
-        <ImageUploader onImageSelect={handleImageSelect} />
-
-        {selectedImage && (
-          <div className="mt-8">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4">Opções de Conversão</h3>
-              <VectorControls 
-                options={options}
-                onOptionsChange={updateOptionsAndProcess}
-              />
+        {!selectedImage ? (
+          <ImageUploader onImageSelect={handleImageSelect} />
+        ) : (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Imagem Original</h3>
+                <div className="aspect-square relative overflow-hidden rounded-lg">
+                  {imagePreview && (
+                    <img 
+                      src={imagePreview} 
+                      alt="Original" 
+                      className="absolute inset-0 w-full h-full object-contain"
+                    />
+                  )}
+                </div>
+              </Card>
+              
+              <Card className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Resultado Vetorial ({options.colorMode})</h3>
+                <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-50">
+                  {vectorResult && (
+                    <div 
+                      className="absolute inset-0 w-full h-full flex items-center justify-center"
+                      dangerouslySetInnerHTML={{ __html: vectorResult.svg }} 
+                    />
+                  )}
+                </div>
+              </Card>
             </div>
 
-            {!vectorResult && (
-              <Button
-                onClick={processImage}
-                disabled={processing}
-                size="lg"
-                className="w-full bg-primary hover:bg-primary/90"
-              >
-                <Wand2 className="w-5 h-5 mr-2" />
-                {processing ? 'Processando...' : 'Converter para Vetor'}
-              </Button>
+            <VectorControls 
+              options={options}
+              onOptionsChange={updateOptionsAndProcess}
+            />
+
+            {vectorResult && vectorResult.text.length > 0 && (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Texto Reconhecido</h3>
+                <div className="space-y-2">
+                  {vectorResult.text.map((text, index) => (
+                    <p key={index} className="text-gray-700">{text}</p>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {vectorResult && vectorResult.fonts.length > 0 && (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Fontes Detectadas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {vectorResult.fonts.map((font, index) => (
+                    <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                      {font}
+                    </span>
+                  ))}
+                </div>
+              </Card>
             )}
           </div>
-        )}
-
-        {vectorResult && (
-          <VectorPreview
-            svgContent={vectorResult.svg}
-            recognizedText={vectorResult.text}
-            detectedFonts={vectorResult.fonts}
-            colorMode={options.colorMode}
-            originalImage={imagePreview || undefined}
-          />
         )}
       </div>
     </div>
