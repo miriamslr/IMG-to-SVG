@@ -4,14 +4,16 @@ import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ColorMode, VectorOptions } from '@/types/vector';
 
+type ExtendedVectorOptions = VectorOptions & {
+  turdSize: number;
+  alphaMax: number;
+  threshold: number;
+  pathomit: number;
+};
+
 interface VectorControlsProps {
-  options: VectorOptions & {
-    turdSize: number;
-    alphaMax: number;
-    threshold: number;
-    pathomit: number;
-  };
-  onOptionsChange: (newOptions: Partial<typeof options>) => void;
+  options: ExtendedVectorOptions;
+  onOptionsChange: (newOptions: Partial<ExtendedVectorOptions>) => void;
 }
 
 const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
