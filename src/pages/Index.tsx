@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import VectorPreview from '@/components/VectorPreview';
+import VectorControls from '@/components/VectorControls';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Wand2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Wand2 } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
-import { Slider } from '@/components/ui/slider';
 import { ColorMode, VectorOptions } from '@/types/vector';
 
 const Index = () => {
@@ -135,101 +133,27 @@ const Index = () => {
 
         <ImageUploader onImageSelect={handleImageSelect} />
 
-        {selectedImage && !vectorResult && (
+        {selectedImage && (
           <div className="mt-8">
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Opções de Conversão</h3>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <Label className="mb-2 block">Tamanho Mínimo dos Objetos</Label>
-                    <Slider
-                      value={[options.turdSize]}
-                      onValueChange={([value]) => 
-                        updateOptionsAndProcess({ turdSize: value })
-                      }
-                      min={1}
-                      max={10}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <Label className="mb-2 block">Suavidade das Curvas</Label>
-                    <Slider
-                      value={[options.alphaMax]}
-                      onValueChange={([value]) => 
-                        updateOptionsAndProcess({ alphaMax: value })
-                      }
-                      min={0}
-                      max={1}
-                      step={0.1}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <Label className="mb-2 block">Limiar de Detecção</Label>
-                    <Slider
-                      value={[options.threshold]}
-                      onValueChange={([value]) => 
-                        updateOptionsAndProcess({ threshold: value })
-                      }
-                      min={0}
-                      max={255}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <Label className="mb-2 block">Simplificação do Caminho</Label>
-                    <Slider
-                      value={[options.pathomit]}
-                      onValueChange={([value]) => 
-                        updateOptionsAndProcess({ pathomit: value })
-                      }
-                      min={0}
-                      max={20}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-
-                <RadioGroup
-                  defaultValue={options.colorMode}
-                  onValueChange={(value: ColorMode) => 
-                    updateOptionsAndProcess({ colorMode: value })
-                  }
-                  className="grid grid-cols-3 gap-4"
-                >
-                  <div>
-                    <RadioGroupItem value="color" id="color" />
-                    <Label htmlFor="color" className="ml-2">Colorido</Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem value="grayscale" id="grayscale" />
-                    <Label htmlFor="grayscale" className="ml-2">Escala de Cinza</Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem value="blackwhite" id="blackwhite" />
-                    <Label htmlFor="blackwhite" className="ml-2">Preto e Branco</Label>
-                  </div>
-                </RadioGroup>
-              </div>
+              <VectorControls 
+                options={options}
+                onOptionsChange={updateOptionsAndProcess}
+              />
             </div>
 
-            <Button
-              onClick={processImage}
-              disabled={processing}
-              size="lg"
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              <Wand2 className="w-5 h-5 mr-2" />
-              {processing ? 'Processando...' : 'Converter para Vetor'}
-            </Button>
+            {!vectorResult && (
+              <Button
+                onClick={processImage}
+                disabled={processing}
+                size="lg"
+                className="w-full bg-primary hover:bg-primary/90"
+              >
+                <Wand2 className="w-5 h-5 mr-2" />
+                {processing ? 'Processando...' : 'Converter para Vetor'}
+              </Button>
+            )}
           </div>
         )}
 
