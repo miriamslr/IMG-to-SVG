@@ -5,7 +5,7 @@ import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
 import { ColorMode } from '@/types/vector';
-import ImageTracer from 'imagetracerjs';
+import * as potrace from 'potrace';
 
 const ImageTracerPage = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -40,44 +40,38 @@ const ImageTracerPage = () => {
     try {
       const reader = new FileReader();
       reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const imageUrl = reader.result as string;
+        
+        potrace.trace(imageUrl, {
+          turdSize: Math.floor(options.turdSize),
+          alphaMax: options.alphaMax,
+          threshold: Math.floor(options.threshold),
+          optTolerance: options.optTolerance,
+          pathomit: Math.floor(options.pathomit),
+        }, (err: Error | null, svg: string) => {
+          if (err) throw err;
           
-          const tracerOptions = {
-            ltres: options.lineThreshold,
-            qtres: options.quality,
-            pathomit: options.pathomit,
-            colorsampling: options.colorMode === 'color' ? 1 : 0,
-            mincolorratio: 0,
-            colorquantcycles: 3,
-            scale: 1,
-            strokewidth: 1,
-            viewbox: true,
-            linefilter: true,
-            desc: false,
-            rightangleenhance: true,
-            pal: options.colorMode === 'blackwhite' ? [[0,0,0],[255,255,255]] : undefined
-          };
-
-          const svgString = ImageTracer.imageToSVG(canvas, tracerOptions);
-
+          let processedSvg = svg;
+          
+          switch (options.colorMode) {
+            case 'color':
+              processedSvg = svg.replace(/fill="[^"]*"/g, '');
+              break;
+            case 'grayscale':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
+              break;
+            case 'blackwhite':
+              processedSvg = svg.replace(/fill="[^"]*"/g, 'fill="#000000"');
+              break;
+          }
+          
           setVectorResult({
-            svg: svgString,
+            svg: processedSvg,
             text: [],
             fonts: []
           });
           setProcessing(false);
-        };
-        img.src = reader.result as string;
+        });
       };
       reader.readAsDataURL(file);
     } catch (error) {
@@ -105,10 +99,10 @@ const ImageTracerPage = () => {
       <div className="container mx-auto px-4 py-6 max-w-[1400px]">
         <div className="text-center mb-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            ImageTracer - Conversor de Imagem para Vetor
+            Potrace - Conversor de Imagem para Vetor
           </h1>
           <p className="text-gray-600">
-            Transforme suas imagens em vetores usando ImageTracer
+            Transforme suas imagens em vetores usando Potrace
           </p>
         </div>
 
