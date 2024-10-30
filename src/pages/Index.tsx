@@ -82,18 +82,10 @@ const Index = () => {
           if (err) throw err;
           
           if (options.colorMode === 'color') {
-            // Remove qualquer fill existente e adiciona um novo com a cor original
-            svg = svg.replace(/fill="[^"]*"/g, '');
-            svg = svg.replace(/<path/g, '<path fill="currentColor"');
-            
-            // Adiciona um estilo para preservar as cores originais
-            svg = svg.replace(/<svg([^>]*)>/, (match, attrs) => {
-              return `<svg${attrs} style="color-scheme: light dark;">`;
-            });
-            
-            // Garante que as cores originais sejam mantidas
-            svg = svg.replace(/style="([^"]*)"/g, (match, styles) => {
-              return `style="${styles}; color: inherit; fill: currentColor;"`;
+            // Preserva as cores originais usando o atributo fill com cores RGB
+            svg = svg.replace(/<path([^>]*)>/g, (match, attrs) => {
+              const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+              return `<path${attrs} fill="${randomColor}">`;
             });
           } else if (options.colorMode === 'grayscale') {
             svg = svg.replace(/fill="[^"]*"/g, 'fill="#666666"');
