@@ -22,8 +22,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        const containerWidth = containerRef.current?.clientWidth || 800;
-        const scale = containerWidth / img.naturalWidth;
         setDimensions({
           width: img.naturalWidth,
           height: img.naturalHeight
@@ -40,47 +38,54 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="xMidYMid meet">`
   );
 
-  const containerHeight = containerRef.current 
-    ? Math.min(containerRef.current.clientWidth * 0.75, dimensions.height) 
-    : dimensions.height;
+  const scale = containerRef.current 
+    ? Math.min(1, containerRef.current.clientWidth / dimensions.width)
+    : 1;
 
   const PreviewContent = () => (
     <div 
       className="relative border rounded-lg overflow-hidden bg-white mx-auto"
       style={{
         width: '100%',
-        height: containerHeight,
-        maxHeight: '70vh'
+        height: dimensions.height * scale,
+        maxWidth: dimensions.width
       }}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* SVG Container */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: dimensions.width,
+          height: dimensions.height
+        }}
+      >
         <div 
           style={{ 
             width: dimensions.width,
-            height: dimensions.height,
-            maxWidth: '100%',
-            maxHeight: '100%',
-            position: 'relative'
+            height: dimensions.height
           }}
           dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
         />
       </div>
       
+      {/* Original Image Container */}
       <div 
-        className="absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left'
         }}
       >
         <img 
           src={originalImage} 
           alt="Original"
           style={{
-            width: 'auto',
-            height: 'auto',
-            maxWidth: '100%',
-            maxHeight: '100%',
-            objectFit: 'contain'
+            width: dimensions.width,
+            height: dimensions.height,
+            display: 'block'
           }}
         />
       </div>
