@@ -17,21 +17,15 @@ export const ImagePreview = ({
 }: ImagePreviewProps) => {
   return (
     <>
-      <div className="absolute inset-0" style={transformStyle}>
+      <div className="absolute inset-0 w-full h-full" style={transformStyle}>
         <div
-          style={{
-            width: dimensions.width,
-            height: dimensions.height,
-            position: 'absolute',
-            top: 0,
-            left: 0
-          }}
+          className="absolute inset-0 w-full h-full"
           dangerouslySetInnerHTML={{ __html: vectorImage }}
         />
       </div>
 
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 w-full h-full"
         style={{
           clipPath: `inset(0 ${100 - position}% 0 0)`,
           transition: 'clip-path 0.1s ease-out',
@@ -42,13 +36,7 @@ export const ImagePreview = ({
           <img
             src={originalImage}
             alt="Original"
-            style={{
-              width: dimensions.width,
-              height: dimensions.height,
-              position: 'absolute',
-              top: 0,
-              left: 0
-            }}
+            className="absolute inset-0 w-full h-full object-contain"
           />
         )}
       </div>
