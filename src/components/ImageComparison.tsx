@@ -34,28 +34,36 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        setDimensions({
+        // Primeiro, definimos as dimensões originais da imagem
+        const originalDimensions = {
           width: img.naturalWidth,
           height: img.naturalHeight
+        };
+
+        // Obtemos as dimensões do container
+        const containerWidth = containerRef.current?.clientWidth || 0;
+        const containerHeight = containerWidth; // Container é quadrado
+
+        // Calculamos as proporções
+        const widthRatio = containerWidth / originalDimensions.width;
+        const heightRatio = containerHeight / originalDimensions.height;
+
+        // Usamos a menor proporção para garantir que a imagem caiba completamente
+        const scale = Math.min(widthRatio, heightRatio);
+
+        // Definimos as novas dimensões mantendo a proporção
+        setDimensions({
+          width: originalDimensions.width * scale,
+          height: originalDimensions.height * scale
         });
 
-        // Calcular o zoom inicial para ajustar a imagem ao container
-        if (containerRef.current) {
-          const containerWidth = containerRef.current.clientWidth;
-          const containerHeight = containerWidth; // Container é quadrado
-          
-          const widthRatio = containerWidth / img.naturalWidth;
-          const heightRatio = containerHeight / img.naturalHeight;
-          
-          // Usar o menor ratio para garantir que a imagem caiba completamente
-          const initialZoom = Math.min(widthRatio, heightRatio, 1);
-          setZoom(initialZoom);
-          
-          // Centralizar a imagem
-          const xOffset = (containerWidth - (img.naturalWidth * initialZoom)) / 2;
-          const yOffset = (containerHeight - (img.naturalHeight * initialZoom)) / 2;
-          setPan({ x: xOffset, y: yOffset });
-        }
+        // Centralizamos a imagem
+        const xOffset = (containerWidth - (originalDimensions.width * scale)) / 2;
+        const yOffset = (containerHeight - (originalDimensions.height * scale)) / 2;
+        setPan({ x: xOffset, y: yOffset });
+
+        // Mantemos o zoom em 1 (100%)
+        setZoom(1);
       };
       img.src = originalImage;
     }
@@ -120,10 +128,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     }, 500);
   };
 
-  const adjustedVectorImage = vectorImage.replace(
-    /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
-  );
+  const floatingControlsClass = alwaysVisible
+    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
+    : '';
+  
+  const opacityClass = alwaysVisible && !isInteracting
+    ? 'opacity-30 hover:opacity-100'
+    : 'opacity-100';
 
   const transformStyle = {
     transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
@@ -133,14 +144,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   const containerWidth = containerRef.current?.clientWidth || 0;
-
-  const floatingControlsClass = alwaysVisible
-    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
-    : '';
-  
-  const opacityClass = alwaysVisible && !isInteracting
-    ? 'opacity-30 hover:opacity-100'
-    : 'opacity-100';
 
   return (
     <div className="space-y-4">
@@ -173,7 +176,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           >
             <ImagePreview
               originalImage={originalImage}
-              vectorImage={adjustedVectorImage}
+              vectorImage={vectorImage}
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
