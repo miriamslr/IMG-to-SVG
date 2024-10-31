@@ -3,6 +3,8 @@ import { Slider } from '@/components/ui/slider';
 import { ZoomControls } from './image-comparison/ZoomControls';
 import { DownloadButtons } from './image-comparison/DownloadButtons';
 import { useZoomHandlers } from './image-comparison/ZoomHandlers';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -16,6 +18,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [alwaysVisible, setAlwaysVisible] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const interactionTimeout = useRef<NodeJS.Timeout>();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useZoomHandlers({ setZoom, containerRef });
@@ -53,6 +58,22 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     setIsDragging(false);
   };
 
+  const handleInteractionStart = () => {
+    setIsInteracting(true);
+    if (interactionTimeout.current) {
+      clearTimeout(interactionTimeout.current);
+    }
+  };
+
+  const handleInteractionEnd = () => {
+    if (interactionTimeout.current) {
+      clearTimeout(interactionTimeout.current);
+    }
+    interactionTimeout.current = setTimeout(() => {
+      setIsInteracting(false);
+    }, 500);
+  };
+
   if (!originalImage) return null;
 
   const adjustedVectorImage = vectorImage.replace(
@@ -71,8 +92,27 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     height: dimensions.height
   };
 
+  const floatingControlsClass = alwaysVisible
+    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
+    : '';
+  
+  const opacityClass = alwaysVisible && !isInteracting
+    ? 'opacity-30 hover:opacity-100'
+    : 'opacity-100';
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="always-visible"
+            checked={alwaysVisible}
+            onCheckedChange={setAlwaysVisible}
+          />
+          <Label htmlFor="always-visible">Controles sempre visíveis</Label>
+        </div>
+      </div>
+
       <div className="flex justify-center gap-4">
         <div className="flex-1 flex flex-col items-center">
           <div
@@ -133,16 +173,18 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             </div>
           </div>
 
-          <ZoomControls
-            zoom={zoom}
-            onZoomChange={setZoom}
-            onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 3))}
-            onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.1))}
-          />
+          <div className={`${alwaysVisible ? 'hidden' : ''}`}>
+            <ZoomControls
+              zoom={zoom}
+              onZoomChange={setZoom}
+              onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 3))}
+              onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.1))}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="px-4 w-full max-w-md mx-auto">
+      <div className={`${alwaysVisible ? 'hidden' : 'px-4 w-full max-w-md mx-auto'}`}>
         <Slider
           value={[position]}
           onValueChange={([value]) => setPosition(value)}
@@ -152,6 +194,34 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           className="z-10"
         />
       </div>
+
+      {alwaysVisible && (
+        <div 
+          className={`${floatingControlsClass} ${opacityClass} bg-white rounded-lg shadow-lg p-4 transition-all duration-300`}
+          onMouseEnter={handleInteractionStart}
+          onMouseLeave={handleInteractionEnd}
+          onMouseMove={handleInteractionStart}
+          onTouchStart={handleInteractionStart}
+          onTouchEnd={handleInteractionEnd}
+        >
+          <div className="space-y-4">
+            <ZoomControls
+              zoom={zoom}
+              onZoomChange={setZoom}
+              onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 3))}
+              onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.1))}
+            />
+            <Slider
+              value={[position]}
+              onValueChange={([value]) => setPosition(value)}
+              min={0}
+              max={100}
+              step={0.1}
+              className="z-10"
+            />
+          </div>
+        </div>
+      )}
 
       <DownloadButtons vectorContent={vectorImage} />
     </div>
