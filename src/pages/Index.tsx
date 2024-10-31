@@ -26,17 +26,17 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    quality: 1,
-    turdSize: 2,
-    alphaMax: 1,
-    threshold: 128,
-    optTolerance: 0.2,
-    pathomit: 8,
-    lineThreshold: 1,
-    cornerThreshold: 90,
-    smoothing: 1,
-    optimizePaths: 1,
-    antiAlias: true
+    quality: 1, // Mantido em 1 para máxima qualidade
+    turdSize: 1, // Reduzido para capturar detalhes menores
+    alphaMax: 0.5, // Ajustado para melhor equilíbrio entre suavidade e precisão
+    threshold: 128, // Mantido como ponto médio para bom contraste
+    optTolerance: 0.1, // Reduzido para maior precisão nas curvas
+    pathomit: 4, // Reduzido para manter mais detalhes
+    lineThreshold: 0.5, // Ajustado para melhor detecção de linhas
+    cornerThreshold: 60, // Ajustado para melhor detecção de cantos
+    smoothing: 0.8, // Ajustado para suavidade sem perder detalhes
+    optimizePaths: 0.8, // Ajustado para otimização sem perda de qualidade
+    antiAlias: true // Mantido para bordas suaves
   });
 
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -150,15 +150,15 @@ const Index = () => {
     setHistory([]);
     setOptions({
       quality: 1,
-      turdSize: 2,
-      alphaMax: 1,
+      turdSize: 1,
+      alphaMax: 0.5,
       threshold: 128,
-      optTolerance: 0.2,
-      pathomit: 8,
-      lineThreshold: 1,
-      cornerThreshold: 90,
-      smoothing: 1,
-      optimizePaths: 1,
+      optTolerance: 0.1,
+      pathomit: 4,
+      lineThreshold: 0.5,
+      cornerThreshold: 60,
+      smoothing: 0.8,
+      optimizePaths: 0.8,
       antiAlias: true
     });
   };
