@@ -66,11 +66,11 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4">
-        <div className="flex-1">
+      <div className="flex justify-center gap-4">
+        <div className="flex-1 flex flex-col items-center">
           <div
             ref={containerRef}
-            className="relative border rounded-lg overflow-hidden bg-white flex-grow cursor-grab active:cursor-grabbing mb-4"
+            className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
             style={{
               width: '100%',
               height: dimensions.height * scale,
