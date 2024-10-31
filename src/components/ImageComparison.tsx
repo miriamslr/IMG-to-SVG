@@ -128,13 +128,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     }, 500);
   };
 
-  const floatingControlsClass = alwaysVisible
-    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
-    : '';
-  
-  const opacityClass = alwaysVisible && !isInteracting
-    ? 'opacity-30 hover:opacity-100'
-    : 'opacity-100';
+  const adjustedVectorImage = vectorImage.replace(
+    /<svg[^>]*>/,
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}">`
+  );
 
   const transformStyle = {
     transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
@@ -144,6 +141,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   const containerWidth = containerRef.current?.clientWidth || 0;
+
+  const floatingControlsClass = alwaysVisible
+    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
+    : '';
+  
+  const opacityClass = alwaysVisible && !isInteracting
+    ? 'opacity-30 hover:opacity-100'
+    : 'opacity-100';
 
   return (
     <div className="space-y-4">
@@ -176,7 +181,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           >
             <ImagePreview
               originalImage={originalImage}
-              vectorImage={vectorImage}
+              vectorImage={adjustedVectorImage}
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
