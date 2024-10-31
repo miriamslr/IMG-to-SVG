@@ -24,7 +24,9 @@ export const convertSvgToPdf = (svgContent: string): Promise<Blob> => {
         imageData: imgData,
         format: 'PNG',
         x: 10,
-        y: 10
+        y: 10,
+        width: canvas.width,
+        height: canvas.height
       });
       const pdfBlob = new Blob([doc.output('blob')], { type: 'application/pdf' });
       resolve(pdfBlob);
