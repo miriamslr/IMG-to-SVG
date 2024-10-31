@@ -38,10 +38,28 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           width: img.naturalWidth,
           height: img.naturalHeight
         });
+
+        // Calcular o zoom inicial para ajustar a imagem ao container
+        if (containerRef.current) {
+          const containerWidth = containerRef.current.clientWidth;
+          const containerHeight = containerWidth; // Container é quadrado
+          
+          const widthRatio = containerWidth / img.naturalWidth;
+          const heightRatio = containerHeight / img.naturalHeight;
+          
+          // Usar o menor ratio para garantir que a imagem caiba completamente
+          const initialZoom = Math.min(widthRatio, heightRatio, 1);
+          setZoom(initialZoom);
+          
+          // Centralizar a imagem
+          const xOffset = (containerWidth - (img.naturalWidth * initialZoom)) / 2;
+          const yOffset = (containerHeight - (img.naturalHeight * initialZoom)) / 2;
+          setPan({ x: xOffset, y: yOffset });
+        }
       };
       img.src = originalImage;
     }
-  }, [originalImage]);
+  }, [originalImage, setZoom]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.altKey && e.button === 0) {
@@ -145,7 +163,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             style={{
               width: '100%',
               height: containerWidth,
-              maxWidth: dimensions.width * zoom
+              maxWidth: dimensions.width
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
