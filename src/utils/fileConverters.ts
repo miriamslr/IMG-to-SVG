@@ -24,16 +24,28 @@ export const convertSvgToPdf = (svgContent: string): Promise<Blob> => {
     const x = (pageWidth - (width * scale)) / 2;
     const y = (pageHeight - (height * scale)) / 2;
     
-    // Adiciona o SVG diretamente ao PDF
-    doc.svg(svgContent, {
-      x,
-      y,
-      width: width * scale,
-      height: height * scale
+    // Converte o SVG para string se necessário
+    const svgString = typeof svgContent === 'string' ? svgContent : new XMLSerializer().serializeToString(svg);
+    
+    // Adiciona o SVG ao PDF usando SVGtoPDF
+    const pdfDoc = new PDFDocument({
+      size: [pageWidth * 72, pageHeight * 72], // Converte mm para pontos (72 pontos por polegada)
+      margin: 0
     });
     
-    const pdfBlob = new Blob([doc.output('blob')], { type: 'application/pdf' });
-    resolve(pdfBlob);
+    SVGtoPDF(pdfDoc, svgString, x * 72, y * 72, {
+      width: width * scale * 72,
+      height: height * scale * 72
+    });
+    
+    // Finaliza o PDF e converte para Blob
+    const chunks: Uint8Array[] = [];
+    pdfDoc.on('data', (chunk) => chunks.push(chunk));
+    pdfDoc.on('end', () => {
+      const pdfBlob = new Blob([Buffer.concat(chunks)], { type: 'application/pdf' });
+      resolve(pdfBlob);
+    });
+    pdfDoc.end();
   });
 };
 
