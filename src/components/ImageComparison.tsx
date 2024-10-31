@@ -13,6 +13,7 @@ interface ImageComparisonProps {
 }
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -21,7 +22,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [alwaysVisible, setAlwaysVisible] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const interactionTimeout = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const {
     zoom,

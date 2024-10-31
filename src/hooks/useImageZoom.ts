@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface UseImageZoomProps {
   minZoom?: number;
@@ -17,7 +17,7 @@ export const useImageZoom = ({
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + zoomStep, maxZoom));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - zoomStep, minZoom));
-  
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -38,10 +38,7 @@ export const useImageZoom = ({
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         const delta = e.deltaY * -0.01;
-        setZoom(prev => {
-          const newZoom = prev + delta;
-          return Math.min(Math.max(newZoom, minZoom), maxZoom);
-        });
+        setZoom(prev => Math.min(Math.max(prev + delta, minZoom), maxZoom));
       }
     };
 
@@ -52,7 +49,7 @@ export const useImageZoom = ({
       window.removeEventListener('keydown', handleKeyDown);
       container.removeEventListener('wheel', handleWheel);
     };
-  }, [minZoom, maxZoom, zoomStep, containerRef, handleZoomIn, handleZoomOut]);
+  }, [containerRef, minZoom, maxZoom, zoomStep, handleZoomIn, handleZoomOut]);
 
   return {
     zoom,
