@@ -6,12 +6,11 @@ export interface RecognitionResult {
 }
 
 export const recognizeText = async (file: File): Promise<RecognitionResult> => {
-  const worker = await createWorker();
+  const worker = await createWorker('eng+por');
   
   try {
-    await worker.load();
-    await worker.loadLanguage('eng+por');
-    await worker.initialize('eng+por');
+    await worker.loadLanguage();
+    await worker.reinitialize();
     await worker.setParameters({
       tessedit_pageseg_mode: PSM.AUTO,
       tessedit_ocr_engine_mode: OEM.LSTM_ONLY,
