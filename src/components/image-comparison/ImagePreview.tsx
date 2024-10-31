@@ -18,15 +18,11 @@ export const ImagePreview = ({
   return (
     <>
       {vectorImage && (
-        <div className="absolute inset-0" style={transformStyle}>
+        <div className="absolute inset-0 bg-white" style={transformStyle}>
           <div
-            className="w-full h-full absolute inset-0"
-            style={{ backgroundColor: 'white' }}
+            className="w-full h-full"
             dangerouslySetInnerHTML={{ 
-              __html: vectorImage.replace(
-                /<svg/,
-                `<svg width="${dimensions.width}" height="${dimensions.height}" preserveAspectRatio="xMidYMid meet" style="background:white"`
-              )
+              __html: vectorImage
             }}
           />
         </div>
@@ -44,8 +40,7 @@ export const ImagePreview = ({
           <img
             src={originalImage}
             alt="Original"
-            className="w-full h-full absolute inset-0"
-            style={{ objectFit: 'contain' }}
+            className="w-full h-full object-contain"
           />
         </div>
       )}

@@ -1,22 +1,29 @@
 export const prepareSvgForDownload = (svgContent: string): string => {
-  let processedSvg = svgContent;
-  
   // Adiciona viewBox se não existir
-  if (!processedSvg.includes('viewBox')) {
-    processedSvg = processedSvg.replace(/<svg/, '<svg viewBox="0 0 100 100"');
+  if (!svgContent.includes('viewBox')) {
+    svgContent = svgContent.replace(/<svg/, '<svg viewBox="0 0 100 100"');
   }
   
-  // Remove qualquer fill="currentColor" e adiciona fill preto
-  processedSvg = processedSvg.replace(/fill="currentColor"/g, 'fill="black"');
-  
-  // Remove qualquer fill="transparent" ou fill="none" e substitui por branco
-  processedSvg = processedSvg.replace(/fill="(?:transparent|none)"/g, 'fill="white"');
-  
-  // Adiciona fill="black" em paths que não têm fill definido
-  processedSvg = processedSvg.replace(/<path(?![^>]*fill=)/g, '<path fill="black"');
+  // Adiciona width e height se não existirem
+  if (!svgContent.includes('width=')) {
+    svgContent = svgContent.replace(/<svg/, '<svg width="100%"');
+  }
+  if (!svgContent.includes('height=')) {
+    svgContent = svgContent.replace(/<svg/, '<svg height="100%"');
+  }
+
+  // Adiciona preserveAspectRatio
+  if (!svgContent.includes('preserveAspectRatio')) {
+    svgContent = svgContent.replace(/<svg/, '<svg preserveAspectRatio="xMidYMid meet"');
+  }
+
+  // Adiciona style com background branco
+  if (!svgContent.includes('style=')) {
+    svgContent = svgContent.replace(/<svg/, '<svg style="background:white"');
+  }
   
   // Garante que todos os elementos tenham um preenchimento definido
-  processedSvg = processedSvg.replace(/<(rect|circle|ellipse|polygon|path)(?![^>]*fill=)/g, '<$1 fill="black"');
+  svgContent = svgContent.replace(/<(rect|circle|ellipse|polygon|path)(?![^>]*fill=)/g, '<$1 fill="black"');
   
-  return processedSvg;
+  return svgContent;
 };

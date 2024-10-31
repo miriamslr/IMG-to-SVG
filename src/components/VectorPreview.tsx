@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { prepareSvgForDownload } from '@/utils/svgUtils';
 
 interface VectorPreviewProps {
   svgContent: string;
@@ -16,6 +17,8 @@ const VectorPreview = ({
   detectedFonts,
   originalImage 
 }: VectorPreviewProps) => {
+  const preparedSvg = prepareSvgForDownload(svgContent);
+
   const handleDownload = async (format: 'svg' | 'pdf' | 'ai' | 'cdr') => {
     try {
       let blob: Blob;
@@ -87,7 +90,7 @@ const VectorPreview = ({
             <h3 className="text-lg font-semibold mb-2">Resultado Vetorial</h3>
             <div 
               className="border rounded-lg p-4 bg-gray-50 h-[400px] flex items-center justify-center" 
-              dangerouslySetInnerHTML={{ __html: svgContent }} 
+              dangerouslySetInnerHTML={{ __html: preparedSvg }} 
             />
           </div>
         </div>
