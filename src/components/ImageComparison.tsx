@@ -52,7 +52,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         const percentage = (x / rect.width) * 100;
         setPosition(Math.max(0, Math.min(100, percentage)));
       }
-    } else if (e.button === 0) { // Left click for panning
+    } else if (e.button === 0) {
       setIsDragging(true);
       setDragStart({
         x: e.clientX - pan.x,
@@ -62,7 +62,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (e.ctrlKey && e.buttons === 2) { // Right button
+    if (e.ctrlKey && e.buttons === 2) {
       e.preventDefault();
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
@@ -70,7 +70,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         const percentage = (x / rect.width) * 100;
         setPosition(Math.max(0, Math.min(100, percentage)));
       }
-    } else if (isDragging) { // Left button for panning
+    } else if (isDragging) {
       setPan({
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
@@ -83,7 +83,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent context menu from appearing
+    e.preventDefault();
   };
 
   const handleInteractionStart = () => {
@@ -101,8 +101,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       setIsInteracting(false);
     }, 500);
   };
-
-  if (!originalImage) return null;
 
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
@@ -141,6 +139,12 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         <div className="flex-1 flex flex-col items-center">
           <div 
             ref={containerRef}
+            className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
+            style={{
+              width: '100%',
+              height: dimensions.height * zoom,
+              maxWidth: dimensions.width * zoom
+            }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -153,7 +157,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
-              containerRef={containerRef}
             />
           </div>
 
