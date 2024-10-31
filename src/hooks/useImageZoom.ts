@@ -4,15 +4,16 @@ interface UseImageZoomProps {
   minZoom?: number;
   maxZoom?: number;
   zoomStep?: number;
+  containerRef: React.RefObject<HTMLDivElement>;
 }
 
 export const useImageZoom = ({
   minZoom = 0.1,
   maxZoom = 3,
-  zoomStep = 0.1
-}: UseImageZoomProps = {}) => {
+  zoomStep = 0.1,
+  containerRef
+}: UseImageZoomProps) => {
   const [zoom, setZoom] = useState(1);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + zoomStep, maxZoom));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - zoomStep, minZoom));
@@ -21,12 +22,22 @@ export const useImageZoom = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === '-') {
+          e.preventDefault();
+          handleZoomOut();
+        }
+      }
+    };
+
     const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) {
+      if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
-        e.stopPropagation();
-        
-        const delta = e.deltaY < 0 ? zoomStep : -zoomStep;
+        const delta = e.deltaY * -0.01;
         setZoom(prev => {
           const newZoom = prev + delta;
           return Math.min(Math.max(newZoom, minZoom), maxZoom);
@@ -34,15 +45,19 @@ export const useImageZoom = ({
       }
     };
 
+    window.addEventListener('keydown', handleKeyDown);
     container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [minZoom, maxZoom, zoomStep]);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [minZoom, maxZoom, zoomStep, containerRef, handleZoomIn, handleZoomOut]);
 
   return {
     zoom,
     setZoom,
     handleZoomIn,
     handleZoomOut,
-    containerRef
   };
 };

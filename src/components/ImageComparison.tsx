@@ -28,7 +28,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     setZoom,
     handleZoomIn,
     handleZoomOut,
-  } = useImageZoom();
+  } = useImageZoom({ containerRef });
 
   useEffect(() => {
     if (originalImage) {
@@ -44,7 +44,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   }, [originalImage]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.ctrlKey && e.button === 2) {
+    if (e.altKey && e.button === 0) {
       e.preventDefault();
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
@@ -62,7 +62,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (e.ctrlKey && e.buttons === 2) {
+    if (e.altKey && e.buttons === 1) {
       e.preventDefault();
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
