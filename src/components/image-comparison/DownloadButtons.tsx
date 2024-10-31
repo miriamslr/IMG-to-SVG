@@ -2,14 +2,14 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { convertSvgToPdf, convertToAi, convertToCdr } from '@/utils/fileConverters';
+import { convertSvgToPdf, convertSvgToImage } from '@/utils/fileConverters';
 
 interface DownloadButtonsProps {
   vectorContent: string;
 }
 
 export const DownloadButtons = ({ vectorContent }: DownloadButtonsProps) => {
-  const handleDownload = async (format: 'svg' | 'pdf' | 'ai' | 'cdr') => {
+  const handleDownload = async (format: 'svg' | 'pdf' | 'png' | 'jpeg') => {
     try {
       let blob: Blob;
       let filename: string;
@@ -23,15 +23,13 @@ export const DownloadButtons = ({ vectorContent }: DownloadButtonsProps) => {
           blob = await convertSvgToPdf(vectorContent);
           filename = 'vector.pdf';
           break;
-        case 'ai':
-          const aiContent = convertToAi(vectorContent);
-          blob = new Blob([aiContent], { type: 'application/illustrator' });
-          filename = 'vector.ai';
+        case 'png':
+          blob = await convertSvgToImage(vectorContent, 'png');
+          filename = 'vector.png';
           break;
-        case 'cdr':
-          const cdrContent = convertToCdr(vectorContent);
-          blob = new Blob([cdrContent], { type: 'application/x-cdr' });
-          filename = 'vector.cdr';
+        case 'jpeg':
+          blob = await convertSvgToImage(vectorContent, 'jpeg');
+          filename = 'vector.jpg';
           break;
         default:
           return;
@@ -69,13 +67,13 @@ export const DownloadButtons = ({ vectorContent }: DownloadButtonsProps) => {
         <Download className="w-4 h-4 mr-2" />
         PDF
       </Button>
-      <Button onClick={() => handleDownload('ai')} variant="outline">
+      <Button onClick={() => handleDownload('png')} variant="outline">
         <Download className="w-4 h-4 mr-2" />
-        AI
+        PNG
       </Button>
-      <Button onClick={() => handleDownload('cdr')} variant="outline">
+      <Button onClick={() => handleDownload('jpeg')} variant="outline">
         <Download className="w-4 h-4 mr-2" />
-        CDR
+        JPEG
       </Button>
     </div>
   );

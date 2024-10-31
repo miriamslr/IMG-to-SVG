@@ -36,17 +36,39 @@ export const convertSvgToPdf = (svgContent: string): Promise<Blob> => {
   });
 };
 
-export const convertToAi = (svgContent: string): string => {
-  // Simulação de conversão para AI
-  return `%!PS-Adobe-3.0
-%%Creator: Adobe Illustrator
-${svgContent}
-%%EOF`;
-};
-
-export const convertToCdr = (svgContent: string): string => {
-  // Simulação de conversão para CDR
-  return `@CorelDRAW
-${svgContent}
-@END`;
+export const convertSvgToImage = (svgContent: string, format: 'png' | 'jpeg'): Promise<Blob> => {
+  return new Promise((resolve) => {
+    const container = document.createElement('div');
+    container.innerHTML = svgContent;
+    const svg = container.firstChild as SVGElement;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      if (format === 'png') {
+        // Para PNG, mantemos o fundo transparente
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        // Para JPEG, adicionamos fundo branco
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      
+      ctx.drawImage(img, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        }
+      }, `image/${format}`, 1.0);
+    };
+    
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+  });
 };
