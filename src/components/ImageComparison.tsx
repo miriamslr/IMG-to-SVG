@@ -37,15 +37,15 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         const containerWidth = containerRef.current?.clientWidth || 0;
         const containerHeight = containerWidth;
 
-        const scale = Math.min(
-          containerWidth / img.naturalWidth,
-          containerHeight / img.naturalHeight
-        );
-
         setDimensions({
           width: containerWidth,
           height: containerHeight
         });
+
+        const scale = Math.min(
+          containerWidth / img.naturalWidth,
+          containerHeight / img.naturalHeight
+        );
 
         const xOffset = (containerWidth - (img.naturalWidth * scale)) / 2;
         const yOffset = (containerHeight - (img.naturalHeight * scale)) / 2;
@@ -163,10 +163,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           >
             <ImagePreview
               originalImage={originalImage}
-              vectorImage={vectorImage.replace(
-                /<svg/,
-                `<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"`
-              )}
+              vectorImage={vectorImage}
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
