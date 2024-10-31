@@ -3,28 +3,21 @@ import ImageUploader from '@/components/ImageUploader';
 import VectorControls from '@/components/VectorControls';
 import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
-import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle, Undo2, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { recognizeText } from '@/utils/textRecognition';
-import { detectFonts } from '@/utils/fontDetection';
-import * as potrace from 'potrace';
+import { processVectorImage, VectorResult } from '@/utils/imageProcessing';
 
 interface HistoryState {
   options: any;
-  vectorResult: any;
+  vectorResult: VectorResult | null;
 }
 
 const Index = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [vectorResult, setVectorResult] = useState<{
-    svg: string;
-    text: string[];
-    fonts: { name: string; confidence: number; }[];
-  } | null>(null);
+  const [vectorResult, setVectorResult] = useState<VectorResult | null>(null);
   
   const [options, setOptions] = useState({
     quality: 1,
@@ -41,7 +34,6 @@ const Index = () => {
   });
 
   const [history, setHistory] = useState<HistoryState[]>([]);
-  const { toast } = useToast();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,67 +46,32 @@ const Index = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [history]);
 
+  const handleImageSelect = async (file: File) => {
+    setSelectedImage(file);
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImagePreview(reader.result as string);
+      processImage(file);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const processImage = async (file: File | null = selectedImage) => {
     if (!file) return;
-
     setProcessing(true);
     
     try {
-      // Perform text recognition and font detection in parallel
-      const [textResult, fontMatches] = await Promise.all([
-        recognizeText(file),
-        detectFonts(file)
-      ]);
+      if (vectorResult) {
+        setHistory(prev => [...prev, { options: { ...options }, vectorResult }]);
+      }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const params: potrace.Params = {
-          turdSize: options.turdSize,
-          alphaMax: options.alphaMax,
-          optCurve: true,
-          threshold: options.threshold,
-          blackOnWhite: true,
-          optTolerance: options.optTolerance,
-          pathomit: options.pathomit,
-        };
-
-        potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
-          if (err) throw err;
-
-          if (vectorResult) {
-            setHistory(prev => [...prev, { options: { ...options }, vectorResult: { ...vectorResult } }]);
-          }
-          
-          setVectorResult({
-            svg,
-            text: textResult.text,
-            fonts: fontMatches
-          });
-
-          if (textResult.confidence > 90) {
-            toast({
-              title: "Texto reconhecido com alta confiança",
-              description: `${textResult.text.length} elementos de texto identificados.`
-            });
-          }
-        });
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      toast({
-        title: "Erro no processamento",
-        description: "Ocorreu um erro ao processar sua imagem.",
-        variant: "destructive"
+      await processVectorImage(file, options, (result) => {
+        setVectorResult(result);
       });
     } finally {
       setProcessing(false);
     }
-  };
-
-  const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
-    setHistory(prev => [...prev, { options: { ...options }, vectorResult: { ...vectorResult } }]);
-    setOptions(prev => ({ ...prev, ...newOptions }));
-    processImage();
   };
 
   const handleUndo = () => {
@@ -123,11 +80,6 @@ const Index = () => {
       setOptions(lastState.options);
       setVectorResult(lastState.vectorResult);
       setHistory(prev => prev.slice(0, -1));
-      
-      toast({
-        title: "Alteração desfeita",
-        description: "A última alteração foi revertida com sucesso."
-      });
     }
   };
 

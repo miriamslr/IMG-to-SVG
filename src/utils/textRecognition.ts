@@ -6,11 +6,11 @@ export interface RecognitionResult {
 }
 
 export const recognizeText = async (file: File): Promise<RecognitionResult> => {
-  const worker = await Tesseract.createWorker('por+eng');
+  const worker = await Tesseract.createWorker();
   
   try {
-    await worker.loadLanguage('por+eng');
-    await worker.initialize('por+eng');
+    await worker.loadLanguage('eng+por');
+    await worker.initialize('eng+por');
     await worker.setParameters({
       tessedit_pageseg_mode: Tesseract.PSM.AUTO,
       tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
