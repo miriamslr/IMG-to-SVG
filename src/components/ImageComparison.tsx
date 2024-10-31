@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, ZoomIn } from 'lucide-react';
 import { handleDownload } from '@/utils/downloadUtils';
 
 interface ImageComparisonProps {
@@ -91,7 +91,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
                 width: dimensions.width,
                 height: dimensions.height
               }}
-              dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
+              dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} 
             />
           </div>
           
@@ -122,7 +122,11 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           </div>
         </div>
 
-        <div className="h-auto py-8">
+        <div className="h-auto py-8 flex flex-col items-center gap-2 bg-gray-50 px-2 rounded-lg">
+          <div className="flex items-center gap-1 text-sm text-gray-600">
+            <ZoomIn className="w-4 h-4" />
+            <span>Zoom</span>
+          </div>
           <Slider
             value={[zoom]}
             onValueChange={([value]) => setZoom(value)}
@@ -132,6 +136,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             orientation="vertical"
             className="h-full"
           />
+          <div className="text-xs text-gray-500">
+            {(zoom * 100).toFixed(0)}%
+          </div>
         </div>
       </div>
 
