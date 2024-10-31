@@ -34,35 +34,22 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        // Primeiro, definimos as dimensões originais da imagem
-        const originalDimensions = {
-          width: img.naturalWidth,
-          height: img.naturalHeight
-        };
-
-        // Obtemos as dimensões do container
         const containerWidth = containerRef.current?.clientWidth || 0;
-        const containerHeight = containerWidth; // Container é quadrado
+        const containerHeight = containerWidth;
 
-        // Calculamos as proporções
-        const widthRatio = containerWidth / originalDimensions.width;
-        const heightRatio = containerHeight / originalDimensions.height;
+        const scale = Math.min(
+          containerWidth / img.naturalWidth,
+          containerHeight / img.naturalHeight
+        );
 
-        // Usamos a menor proporção para garantir que a imagem caiba completamente
-        const scale = Math.min(widthRatio, heightRatio);
-
-        // Definimos as novas dimensões mantendo a proporção
         setDimensions({
-          width: originalDimensions.width * scale,
-          height: originalDimensions.height * scale
+          width: containerWidth,
+          height: containerHeight
         });
 
-        // Centralizamos a imagem
-        const xOffset = (containerWidth - (originalDimensions.width * scale)) / 2;
-        const yOffset = (containerHeight - (originalDimensions.height * scale)) / 2;
+        const xOffset = (containerWidth - (img.naturalWidth * scale)) / 2;
+        const yOffset = (containerHeight - (img.naturalHeight * scale)) / 2;
         setPan({ x: xOffset, y: yOffset });
-
-        // Mantemos o zoom em 1 (100%)
         setZoom(1);
       };
       img.src = originalImage;
@@ -128,11 +115,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     }, 500);
   };
 
-  const adjustedVectorImage = vectorImage.replace(
-    /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}">`
-  );
-
   const transformStyle = {
     transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
     transformOrigin: 'top left',
@@ -181,7 +163,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           >
             <ImagePreview
               originalImage={originalImage}
-              vectorImage={adjustedVectorImage}
+              vectorImage={vectorImage.replace(
+                /<svg/,
+                `<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"`
+              )}
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
