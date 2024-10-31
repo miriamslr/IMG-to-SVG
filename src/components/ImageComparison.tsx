@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { ZoomControls } from './image-comparison/ZoomControls';
 import { DownloadButtons } from './image-comparison/DownloadButtons';
+import { useZoomHandlers } from './image-comparison/ZoomHandlers';
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -17,6 +18,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  useZoomHandlers({ setZoom, containerRef });
+
   useEffect(() => {
     if (originalImage) {
       const img = new Image();
@@ -29,9 +32,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       img.src = originalImage;
     }
   }, [originalImage]);
-
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 3));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.1));
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -136,8 +136,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           <ZoomControls
             zoom={zoom}
             onZoomChange={setZoom}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
+            onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 3))}
+            onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.1))}
           />
         </div>
       </div>
