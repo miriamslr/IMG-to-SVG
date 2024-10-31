@@ -64,6 +64,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
     : 1;
 
+  const transformStyle = {
+    transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
+    transformOrigin: 'top left',
+    width: dimensions.width,
+    height: dimensions.height
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-center gap-4">
@@ -83,15 +90,15 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           >
             <div
               className="absolute inset-0"
-              style={{
-                transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
-                transformOrigin: 'top left'
-              }}
+              style={transformStyle}
             >
               <div
                 style={{
                   width: dimensions.width,
-                  height: dimensions.height
+                  height: dimensions.height,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
                 }}
                 dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
               />
@@ -102,8 +109,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
               style={{
                 clipPath: `inset(0 ${100 - position}% 0 0)`,
                 transition: 'clip-path 0.1s ease-out',
-                transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
-                transformOrigin: 'top left'
+                ...transformStyle
               }}
             >
               <img
@@ -111,7 +117,10 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
                 alt="Original"
                 style={{
                   width: dimensions.width,
-                  height: dimensions.height
+                  height: dimensions.height,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
                 }}
               />
             </div>
