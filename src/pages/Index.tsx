@@ -4,10 +4,9 @@ import VectorControls from '@/components/VectorControls';
 import ImageComparison from '@/components/ImageComparison';
 import RecognitionResults from '@/components/RecognitionResults';
 import { useToast } from '@/components/ui/use-toast';
-import { Wand2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import * as Tesseract from 'tesseract.js';
 import * as potrace from 'potrace';
-import { ColorMode } from '@/types/vector';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Index = () => {
@@ -21,7 +20,6 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    colorMode: 'color' as ColorMode,
     quality: 1,
     turdSize: 2,
     alphaMax: 1,
@@ -69,23 +67,12 @@ const Index = () => {
           optCurve: true,
           threshold: options.threshold,
           blackOnWhite: true,
-          color: options.colorMode === 'grayscale' ? '#666666' : 
-                 options.colorMode === 'blackwhite' ? '#000000' : undefined,
-          background: options.colorMode === 'color' ? 'transparent' : '#FFFFFF',
-          fillStrategy: options.colorMode === 'color' ? 'dominant' : 'fixed',
-          rangeDistribution: options.colorMode === 'color' ? 'auto' : 'none',
           optTolerance: options.optTolerance,
           pathomit: options.pathomit,
         };
 
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
-          
-          // Se estiver no modo colorido, preserva as cores originais
-          if (options.colorMode === 'color') {
-            svg = svg.replace(/fill="[^"]*"/g, '');
-            svg = svg.replace(/<path/g, '<path fill="currentColor"');
-          }
           
           const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
             Math.random() > 0.5

@@ -1,14 +1,11 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { ColorMode } from '@/types/vector';
 import VectorSlider from './vector-controls/VectorSlider';
-import ColorModeSelector from './vector-controls/ColorModeSelector';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronDown } from 'lucide-react';
 
 interface VectorOptions {
-  colorMode: ColorMode;
   quality: number;
   turdSize: number;
   alphaMax: number;
@@ -32,13 +29,6 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
       <h3 className="text-xl font-semibold mb-6 text-center">Opções de Conversão</h3>
       
       <ScrollArea className="h-[calc(100vh-200px)] pr-4">
-        <ColorModeSelector
-          value={options.colorMode}
-          onChange={(value) => onOptionsChange({ colorMode: value })}
-        />
-
-        <Separator className="my-6" />
-        
         <div className="space-y-6">
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Básicos</h4>
