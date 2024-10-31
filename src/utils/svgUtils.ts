@@ -23,8 +23,16 @@ export const prepareSvgForDownload = (svgContent: string, antiAlias: boolean = t
   
   // Adiciona shape-rendering para controlar o anti-aliasing
   if (antiAlias) {
+    // Remove qualquer shape-rendering existente
+    processedSvg = processedSvg.replace(/shape-rendering="[^"]*"/g, '');
+    // Adiciona shape-rendering para suavização
     processedSvg = processedSvg.replace(/<svg/, '<svg shape-rendering="geometricPrecision"');
+    // Adiciona atributos para melhor suavização
+    processedSvg = processedSvg.replace(/<path/g, '<path vector-effect="non-scaling-stroke"');
   } else {
+    // Remove qualquer shape-rendering existente
+    processedSvg = processedSvg.replace(/shape-rendering="[^"]*"/g, '');
+    // Adiciona shape-rendering para pixels nítidos
     processedSvg = processedSvg.replace(/<svg/, '<svg shape-rendering="crispEdges"');
   }
   

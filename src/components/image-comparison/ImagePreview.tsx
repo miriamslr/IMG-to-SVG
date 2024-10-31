@@ -1,4 +1,5 @@
 import React from 'react';
+import { prepareSvgForDownload } from '@/utils/svgUtils';
 
 interface ImagePreviewProps {
   originalImage: string | null;
@@ -6,6 +7,7 @@ interface ImagePreviewProps {
   position: number;
   dimensions: { width: number; height: number };
   transformStyle: React.CSSProperties;
+  antiAlias?: boolean;
 }
 
 export const ImagePreview = ({
@@ -14,7 +16,10 @@ export const ImagePreview = ({
   position,
   dimensions,
   transformStyle,
+  antiAlias = true,
 }: ImagePreviewProps) => {
+  const processedSvg = prepareSvgForDownload(vectorImage, antiAlias);
+
   return (
     <>
       <div className="absolute inset-0" style={transformStyle}>
@@ -26,7 +31,7 @@ export const ImagePreview = ({
             top: 0,
             left: 0
           }}
-          dangerouslySetInnerHTML={{ __html: vectorImage }}
+          dangerouslySetInnerHTML={{ __html: processedSvg }}
         />
       </div>
 
