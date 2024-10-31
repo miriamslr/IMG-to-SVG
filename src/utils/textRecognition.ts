@@ -1,4 +1,4 @@
-import * as Tesseract from 'tesseract.js';
+import { createWorker, PSM, OEM } from 'tesseract.js';
 
 export interface RecognitionResult {
   text: string[];
@@ -6,14 +6,15 @@ export interface RecognitionResult {
 }
 
 export const recognizeText = async (file: File): Promise<RecognitionResult> => {
-  const worker = await Tesseract.createWorker();
+  const worker = await createWorker();
   
   try {
+    await worker.load();
     await worker.loadLanguage('eng+por');
     await worker.initialize('eng+por');
     await worker.setParameters({
-      tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-      tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
+      tessedit_pageseg_mode: PSM.AUTO,
+      tessedit_ocr_engine_mode: OEM.LSTM_ONLY,
       preserve_interword_spaces: '1',
     });
 

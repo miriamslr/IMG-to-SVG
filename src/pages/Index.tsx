@@ -74,6 +74,14 @@ const Index = () => {
     }
   };
 
+  const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
+    if (vectorResult) {
+      setHistory(prev => [...prev, { options: { ...options }, vectorResult }]);
+    }
+    setOptions(prev => ({ ...prev, ...newOptions }));
+    processImage();
+  };
+
   const handleUndo = () => {
     if (history.length > 0) {
       const lastState = history[history.length - 1];
