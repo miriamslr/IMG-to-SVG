@@ -1,7 +1,8 @@
+```tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Download, ZoomIn } from 'lucide-react';
+import { Download, ZoomIn, ZoomOut, Move } from 'lucide-react';
 import { handleDownload } from '@/utils/downloadUtils';
 
 interface ImageComparisonProps {
@@ -30,17 +31,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       img.src = originalImage;
     }
   }, [originalImage]);
-  
-  if (!originalImage) return null;
 
-  const adjustedVectorImage = vectorImage.replace(
-    /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
-  );
-
-  const scale = containerRef.current 
-    ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
-    : 1;
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 3));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.1, 0.1));
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -62,82 +55,116 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const handleMouseUp = () => {
     setIsDragging(false);
   };
+  
+  if (!originalImage) return null;
+
+  const adjustedVectorImage = vectorImage.replace(
+    /<svg[^>]*>/,
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
+  );
+
+  const scale = containerRef.current 
+    ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
+    : 1;
 
   return (
     <div className="space-y-4">
       <div className="flex gap-4">
-        <div 
-          ref={containerRef}
-          className="relative border rounded-lg overflow-hidden bg-white flex-grow cursor-grab active:cursor-grabbing"
-          style={{
-            width: '100%',
-            height: dimensions.height * scale,
-            maxWidth: dimensions.width * zoom
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
+        <div className="flex-1">
           <div 
-            className="absolute inset-0"
-            style={{ 
-              transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
-              transformOrigin: 'top left'
+            ref={containerRef}
+            className="relative border rounded-lg overflow-hidden bg-white flex-grow cursor-grab active:cursor-grabbing mb-4"
+            style={{
+              width: '100%',
+              height: dimensions.height * scale,
+              maxWidth: dimensions.width * zoom
             }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           >
             <div 
+              className="absolute inset-0"
               style={{ 
-                width: dimensions.width,
-                height: dimensions.height
+                transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
+                transformOrigin: 'top left'
               }}
-              dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} 
-            />
-          </div>
-          
-          <div 
-            className="absolute inset-0"
-            style={{
-              clipPath: `inset(0 ${100 - position}% 0 0)`,
-              transition: 'clip-path 0.1s ease-out',
-              transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
-              transformOrigin: 'top left'
-            }}
-          >
-            <img 
-              src={originalImage} 
-              alt="Original"
+            >
+              <div 
+                style={{ 
+                  width: dimensions.width,
+                  height: dimensions.height
+                }}
+                dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} 
+              />
+            </div>
+            
+            <div 
+              className="absolute inset-0"
               style={{
-                width: dimensions.width,
-                height: dimensions.height
+                clipPath: `inset(0 ${100 - position}% 0 0)`,
+                transition: 'clip-path 0.1s ease-out',
+                transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
+                transformOrigin: 'top left'
               }}
-            />
+            >
+              <img 
+                src={originalImage} 
+                alt="Original"
+                style={{
+                  width: dimensions.width,
+                  height: dimensions.height
+                }}
+              />
+            </div>
+
+            <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+              Vetorizado
+            </div>
+            <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+              Original
+            </div>
           </div>
 
-          <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-            Vetorizado
-          </div>
-          <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-            Original
-          </div>
-        </div>
-
-        <div className="h-auto py-8 flex flex-col items-center gap-2 bg-gray-50 px-2 rounded-lg">
-          <div className="flex items-center gap-1 text-sm text-gray-600">
-            <ZoomIn className="w-4 h-4" />
-            <span>Zoom</span>
-          </div>
-          <Slider
-            value={[zoom]}
-            onValueChange={([value]) => setZoom(value)}
-            min={0.1}
-            max={3}
-            step={0.1}
-            orientation="vertical"
-            className="h-full"
-          />
-          <div className="text-xs text-gray-500">
-            {(zoom * 100).toFixed(0)}%
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Move className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Arraste para mover</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleZoomOut}
+                  className="h-8 w-8"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <div className="w-32">
+                  <Slider
+                    value={[zoom]}
+                    onValueChange={([value]) => setZoom(value)}
+                    min={0.1}
+                    max={3}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleZoomIn}
+                  className="h-8 w-8"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-600 min-w-[3rem]">
+                  {(zoom * 100).toFixed(0)}%
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -176,3 +203,4 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 };
 
 export default ImageComparison;
+```
