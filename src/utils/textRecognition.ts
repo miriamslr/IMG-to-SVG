@@ -9,7 +9,7 @@ export const recognizeText = async (file: File): Promise<RecognitionResult> => {
   const worker = await createWorker('eng+por');
   
   try {
-    await worker.initialize();
+    await worker.reinitialize();
     await worker.setParameters({
       tessedit_pageseg_mode: PSM.AUTO,
       tessedit_ocr_engine_mode: OEM.LSTM_ONLY,
