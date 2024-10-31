@@ -6,9 +6,6 @@ export const prepareSvgForDownload = (svgContent: string): string => {
     processedSvg = processedSvg.replace(/<svg/, '<svg viewBox="0 0 100 100"');
   }
   
-  // Adiciona um fundo branco como primeiro elemento
-  processedSvg = processedSvg.replace(/<svg([^>]*)>/, '<svg$1><rect width="100%" height="100%" fill="white"/>');
-  
   // Remove qualquer fill="currentColor" e adiciona fill preto
   processedSvg = processedSvg.replace(/fill="currentColor"/g, 'fill="black"');
   
