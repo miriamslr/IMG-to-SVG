@@ -8,6 +8,7 @@ interface ImageComparisonProps {
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
+  const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -33,60 +34,74 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   );
 
   const scale = containerRef.current 
-    ? Math.min(1, containerRef.current.clientWidth / dimensions.width)
+    ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
     : 1;
 
   return (
     <div className="space-y-4">
-      <div 
-        ref={containerRef}
-        className="relative border rounded-lg overflow-hidden bg-white mx-auto"
-        style={{
-          width: '100%',
-          height: dimensions.height * scale,
-          maxWidth: dimensions.width
-        }}
-      >
+      <div className="flex gap-4">
         <div 
-          className="absolute inset-0"
-          style={{ 
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left'
+          ref={containerRef}
+          className="relative border rounded-lg overflow-hidden bg-white flex-grow"
+          style={{
+            width: '100%',
+            height: dimensions.height * scale,
+            maxWidth: dimensions.width * zoom
           }}
         >
           <div 
+            className="absolute inset-0"
             style={{ 
-              width: dimensions.width,
-              height: dimensions.height
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left'
             }}
-            dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
-          />
-        </div>
-        
-        <div 
-          className="absolute inset-0"
-          style={{
-            clipPath: `inset(0 ${100 - position}% 0 0)`,
-            transition: 'clip-path 0.1s ease-out',
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left'
-          }}
-        >
-          <img 
-            src={originalImage} 
-            alt="Original"
+          >
+            <div 
+              style={{ 
+                width: dimensions.width,
+                height: dimensions.height
+              }}
+              dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
+            />
+          </div>
+          
+          <div 
+            className="absolute inset-0"
             style={{
-              width: dimensions.width,
-              height: dimensions.height
+              clipPath: `inset(0 ${100 - position}% 0 0)`,
+              transition: 'clip-path 0.1s ease-out',
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left'
             }}
-          />
+          >
+            <img 
+              src={originalImage} 
+              alt="Original"
+              style={{
+                width: dimensions.width,
+                height: dimensions.height
+              }}
+            />
+          </div>
+
+          <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+            Vetorizado
+          </div>
+          <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
+            Original
+          </div>
         </div>
 
-        <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-          Vetorizado
-        </div>
-        <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-          Original
+        <div className="h-auto py-8">
+          <Slider
+            value={[zoom]}
+            onValueChange={([value]) => setZoom(value)}
+            min={0.1}
+            max={3}
+            step={0.1}
+            orientation="vertical"
+            className="h-full"
+          />
         </div>
       </div>
 
