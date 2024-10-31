@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { ZoomControls } from './image-comparison/ZoomControls';
 import { DownloadButtons } from './image-comparison/DownloadButtons';
@@ -80,7 +80,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
             style={{
               width: '100%',
-              height: dimensions.height * scale,
+              height: dimensions.height * zoom,
               maxWidth: dimensions.width * zoom
             }}
             onMouseDown={handleMouseDown}
@@ -153,7 +153,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         />
       </div>
 
-      <DownloadButtons vectorContent={adjustedVectorImage} />
+      <DownloadButtons vectorContent={vectorImage} />
     </div>
   );
 };
