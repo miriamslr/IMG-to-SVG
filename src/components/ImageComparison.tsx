@@ -3,6 +3,7 @@ import { Slider } from '@/components/ui/slider';
 import { ZoomControls } from './image-comparison/ZoomControls';
 import { DownloadButtons } from './image-comparison/DownloadButtons';
 import { ImagePreview } from './image-comparison/ImagePreview';
+import { PreviewContainer } from './image-comparison/PreviewContainer';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useImageZoom } from '@/hooks/useImageZoom';
@@ -114,14 +115,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     height: dimensions.height
   };
 
-  const floatingControlsClass = alwaysVisible
-    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
-    : '';
-  
-  const opacityClass = alwaysVisible && !isInteracting
-    ? 'opacity-30 hover:opacity-100'
-    : 'opacity-100';
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
@@ -137,27 +130,25 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
       <div className="flex justify-center gap-4">
         <div className="flex-1 flex flex-col items-center">
-          <div 
-            ref={containerRef}
-            className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
-            style={{
-              width: '100%',
-              height: dimensions.height * zoom,
-              maxWidth: dimensions.width * zoom
-            }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onContextMenu={handleContextMenu}
-          >
-            <ImagePreview
-              originalImage={originalImage}
-              vectorImage={adjustedVectorImage}
-              position={position}
-              dimensions={dimensions}
-              transformStyle={transformStyle}
-            />
+          <div ref={containerRef}>
+            <PreviewContainer dimensions={dimensions} zoom={zoom}>
+              <div
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onContextMenu={handleContextMenu}
+                className="w-full h-full"
+              >
+                <ImagePreview
+                  originalImage={originalImage}
+                  vectorImage={adjustedVectorImage}
+                  position={position}
+                  dimensions={dimensions}
+                  transformStyle={transformStyle}
+                />
+              </div>
+            </PreviewContainer>
           </div>
 
           <div className={`${alwaysVisible ? 'hidden' : ''}`}>
@@ -184,14 +175,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
       {alwaysVisible && (
         <div 
-          className={`${floatingControlsClass} ${opacityClass} bg-white rounded-lg shadow-lg p-4 transition-all duration-300`}
+          className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300 ${!isInteracting ? 'opacity-30 hover:opacity-100' : 'opacity-100'}`}
           onMouseEnter={handleInteractionStart}
           onMouseLeave={handleInteractionEnd}
           onMouseMove={handleInteractionStart}
           onTouchStart={handleInteractionStart}
           onTouchEnd={handleInteractionEnd}
         >
-          <div className="space-y-4">
+          <div className="space-y-4 bg-white rounded-lg shadow-lg p-4 transition-all duration-300">
             <ZoomControls
               zoom={zoom}
               onZoomChange={setZoom}
