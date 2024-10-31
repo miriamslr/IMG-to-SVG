@@ -13,7 +13,6 @@ interface ImageComparisonProps {
 }
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
-  // Move all hooks to the top level
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -115,13 +114,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     height: dimensions.height
   };
 
-  const floatingControlsClass = alwaysVisible
-    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
-    : '';
-  
-  const opacityClass = alwaysVisible && !isInteracting
-    ? 'opacity-30 hover:opacity-100'
-    : 'opacity-100';
+  const containerWidth = containerRef.current?.clientWidth || 0;
 
   return (
     <div className="space-y-4">
@@ -143,7 +136,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
             style={{
               width: '100%',
-              height: Math.min(dimensions.height * zoom, 300),
+              height: containerWidth,
               maxWidth: dimensions.width * zoom
             }}
             onMouseDown={handleMouseDown}
