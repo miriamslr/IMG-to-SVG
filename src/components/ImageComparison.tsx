@@ -146,7 +146,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           <div className={`${alwaysVisible ? 'hidden' : ''}`}>
             <ZoomControls
               zoom={zoom}
-              onZoomChange={setZoom}
+              onZoomChange={handleZoomChange}
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
             />
@@ -172,7 +172,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           <div className="space-y-4">
             <ZoomControls
               zoom={zoom}
-              onZoomChange={setZoom}
+              onZoomChange={handleZoomChange}
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
             />
