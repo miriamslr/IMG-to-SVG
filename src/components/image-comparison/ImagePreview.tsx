@@ -15,44 +15,43 @@ export const ImagePreview = ({
   dimensions,
   transformStyle,
 }: ImagePreviewProps) => {
-  // Processa o SVG para garantir dimensões e visualização corretas
-  const processedSvg = vectorImage
-    .replace(/<svg/, `<svg width="100%" height="100%" viewBox="0 0 ${dimensions.width} ${dimensions.height}"`)
-    .replace(/style="([^"]*)"/, (match, style) => `style="${style};background:white"`);
-
   return (
     <>
-      {vectorImage && (
-        <div 
-          className="absolute inset-0 bg-white overflow-hidden" 
-          style={transformStyle}
-        >
-          <div
-            className="w-full h-full"
-            dangerouslySetInnerHTML={{ 
-              __html: processedSvg
-            }}
-          />
-        </div>
-      )}
-
-      {originalImage && (
+      <div className="absolute inset-0" style={transformStyle}>
         <div
-          className="absolute inset-0 overflow-hidden"
           style={{
-            clipPath: `inset(0 ${100 - position}% 0 0)`,
-            transition: 'clip-path 0.1s ease-out',
-            ...transformStyle
+            width: dimensions.width,
+            height: dimensions.height,
+            position: 'absolute',
+            top: 0,
+            left: 0
           }}
-        >
+          dangerouslySetInnerHTML={{ __html: vectorImage }}
+        />
+      </div>
+
+      <div
+        className="absolute inset-0"
+        style={{
+          clipPath: `inset(0 ${100 - position}% 0 0)`,
+          transition: 'clip-path 0.1s ease-out',
+          ...transformStyle
+        }}
+      >
+        {originalImage && (
           <img
             src={originalImage}
             alt="Original"
-            className="w-full h-full object-contain"
-            style={{ maxWidth: '100%', maxHeight: '100%' }}
+            style={{
+              width: dimensions.width,
+              height: dimensions.height,
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
         Vetorizado

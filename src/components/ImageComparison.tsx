@@ -34,27 +34,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        const containerWidth = containerRef.current?.clientWidth || 0;
-        const containerHeight = containerWidth;
-
         setDimensions({
-          width: containerWidth,
-          height: containerHeight
+          width: img.naturalWidth,
+          height: img.naturalHeight
         });
-
-        const scale = Math.min(
-          containerWidth / img.naturalWidth,
-          containerHeight / img.naturalHeight
-        );
-
-        const xOffset = (containerWidth - (img.naturalWidth * scale)) / 2;
-        const yOffset = (containerHeight - (img.naturalHeight * scale)) / 2;
-        setPan({ x: xOffset, y: yOffset });
-        setZoom(1);
       };
       img.src = originalImage;
     }
-  }, [originalImage, setZoom]);
+  }, [originalImage]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.altKey && e.button === 0) {
@@ -115,6 +102,11 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     }, 500);
   };
 
+  const adjustedVectorImage = vectorImage.replace(
+    /<svg[^>]*>/,
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
+  );
+
   const transformStyle = {
     transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
     transformOrigin: 'top left',
@@ -153,7 +145,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             style={{
               width: '100%',
               height: containerWidth,
-              maxWidth: dimensions.width
+              maxWidth: dimensions.width * zoom
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -163,7 +155,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
           >
             <ImagePreview
               originalImage={originalImage}
-              vectorImage={vectorImage}
+              vectorImage={adjustedVectorImage}
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
