@@ -25,14 +25,22 @@ export const ImagePreview = ({
   onMouseUp,
   onMouseLeave
 }: ImagePreviewProps) => {
+  const getScaleValue = (transform: string | undefined): number => {
+    if (!transform) return 1;
+    const match = transform.match(/scale\(([\d.]+)\)/);
+    return match ? parseFloat(match[1]) : 1;
+  };
+
+  const scale = getScaleValue(transformStyle.transform?.toString());
+
   return (
     <div
       ref={containerRef}
       className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
       style={{
         width: '100%',
-        height: dimensions.height * transformStyle.transform?.toString().match(/scale\(([\d.]+)\)/)?.[1] || 1,
-        maxWidth: dimensions.width * (transformStyle.transform?.toString().match(/scale\(([\d.]+)\)/)?.[1] || 1)
+        height: dimensions.height * scale,
+        maxWidth: dimensions.width * scale
       }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
