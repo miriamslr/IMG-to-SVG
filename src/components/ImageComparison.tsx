@@ -1,9 +1,7 @@
-```tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { Download, ZoomIn, ZoomOut, Move } from 'lucide-react';
-import { handleDownload } from '@/utils/downloadUtils';
+import { ZoomControls } from './image-comparison/ZoomControls';
+import { DownloadButtons } from './image-comparison/DownloadButtons';
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -18,7 +16,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     if (originalImage) {
       const img = new Image();
@@ -45,7 +43,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    
     setPan({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y
@@ -55,7 +52,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-  
+
   if (!originalImage) return null;
 
   const adjustedVectorImage = vectorImage.replace(
@@ -63,7 +60,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
   );
 
-  const scale = containerRef.current 
+  const scale = containerRef.current
     ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
     : 1;
 
@@ -71,7 +68,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     <div className="space-y-4">
       <div className="flex gap-4">
         <div className="flex-1">
-          <div 
+          <div
             ref={containerRef}
             className="relative border rounded-lg overflow-hidden bg-white flex-grow cursor-grab active:cursor-grabbing mb-4"
             style={{
@@ -84,23 +81,23 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
-            <div 
+            <div
               className="absolute inset-0"
-              style={{ 
+              style={{
                 transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
                 transformOrigin: 'top left'
               }}
             >
-              <div 
-                style={{ 
+              <div
+                style={{
                   width: dimensions.width,
                   height: dimensions.height
                 }}
-                dangerouslySetInnerHTML={{ __html: adjustedVectorImage }} 
+                dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
               />
             </div>
-            
-            <div 
+
+            <div
               className="absolute inset-0"
               style={{
                 clipPath: `inset(0 ${100 - position}% 0 0)`,
@@ -109,8 +106,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
                 transformOrigin: 'top left'
               }}
             >
-              <img 
-                src={originalImage} 
+              <img
+                src={originalImage}
                 alt="Original"
                 style={{
                   width: dimensions.width,
@@ -127,45 +124,12 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Move className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600">Arraste para mover</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleZoomOut}
-                  className="h-8 w-8"
-                >
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-                <div className="w-32">
-                  <Slider
-                    value={[zoom]}
-                    onValueChange={([value]) => setZoom(value)}
-                    min={0.1}
-                    max={3}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleZoomIn}
-                  className="h-8 w-8"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-gray-600 min-w-[3rem]">
-                  {(zoom * 100).toFixed(0)}%
-                </span>
-              </div>
-            </div>
-          </div>
+          <ZoomControls
+            zoom={zoom}
+            onZoomChange={setZoom}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+          />
         </div>
       </div>
 
@@ -180,27 +144,9 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
         />
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <Button onClick={() => handleDownload(adjustedVectorImage, 'svg')} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          SVG
-        </Button>
-        <Button onClick={() => handleDownload(adjustedVectorImage, 'pdf')} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          PDF
-        </Button>
-        <Button onClick={() => handleDownload(adjustedVectorImage, 'ai')} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          AI
-        </Button>
-        <Button onClick={() => handleDownload(adjustedVectorImage, 'cdr')} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          CDR
-        </Button>
-      </div>
+      <DownloadButtons vectorContent={adjustedVectorImage} />
     </div>
   );
 };
 
 export default ImageComparison;
-```
