@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { ZoomControls } from './image-comparison/ZoomControls';
 import { DownloadButtons } from './image-comparison/DownloadButtons';
 import { ImagePreview } from './image-comparison/ImagePreview';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useImageZoom } from '@/hooks/useImageZoom';
+import { useZoomPan } from '@/hooks/useZoomPan';
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -13,24 +13,26 @@ interface ImageComparisonProps {
 }
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [alwaysVisible, setAlwaysVisible] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
-  const interactionTimeout = useRef<NodeJS.Timeout>();
+  const interactionTimeout = React.useRef<NodeJS.Timeout>();
 
   const {
     zoom,
-    setZoom,
+    pan,
+    setPan,
     handleZoomIn,
     handleZoomOut,
-  } = useImageZoom({ containerRef });
+    handleZoomChange,
+    handleZoomToPoint,
+    containerRef
+  } = useZoomPan();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
@@ -78,34 +80,12 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     }
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-  };
-
-  const handleInteractionStart = () => {
-    setIsInteracting(true);
-    if (interactionTimeout.current) {
-      clearTimeout(interactionTimeout.current);
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      handleZoomToPoint(e.deltaY, e.clientX, e.clientY);
     }
   };
-
-  const handleInteractionEnd = () => {
-    if (interactionTimeout.current) {
-      clearTimeout(interactionTimeout.current);
-    }
-    interactionTimeout.current = setTimeout(() => {
-      setIsInteracting(false);
-    }, 500);
-  };
-
-  const adjustedVectorImage = vectorImage.replace(
-    /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
-  );
 
   const transformStyle = {
     transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
@@ -149,13 +129,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onContextMenu={handleContextMenu}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+            onWheel={handleWheel}
+            onContextMenu={e => e.preventDefault()}
           >
             <ImagePreview
               originalImage={originalImage}
-              vectorImage={adjustedVectorImage}
+              vectorImage={vectorImage}
               position={position}
               dimensions={dimensions}
               transformStyle={transformStyle}
@@ -187,11 +168,6 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
       {alwaysVisible && (
         <div 
           className={`${floatingControlsClass} ${opacityClass} bg-white rounded-lg shadow-lg p-4 transition-all duration-300`}
-          onMouseEnter={handleInteractionStart}
-          onMouseLeave={handleInteractionEnd}
-          onMouseMove={handleInteractionStart}
-          onTouchStart={handleInteractionStart}
-          onTouchEnd={handleInteractionEnd}
         >
           <div className="space-y-4">
             <ZoomControls
