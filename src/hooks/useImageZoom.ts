@@ -35,7 +35,7 @@ export const useImageZoom = ({
     };
 
     const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
+      if (e.altKey) { // Alterado de e.ctrlKey || e.metaKey para e.altKey
         e.preventDefault();
         const delta = e.deltaY * -0.01;
         setZoom(prev => Math.min(Math.max(prev + delta, minZoom), maxZoom));
