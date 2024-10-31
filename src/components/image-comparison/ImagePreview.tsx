@@ -21,6 +21,7 @@ export const ImagePreview = ({
         <div
           className="absolute inset-0 w-full h-full"
           dangerouslySetInnerHTML={{ __html: vectorImage }}
+          style={{ objectFit: 'contain' }}
         />
       </div>
 
