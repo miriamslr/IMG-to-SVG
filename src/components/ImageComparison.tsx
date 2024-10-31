@@ -116,6 +116,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
   const containerWidth = containerRef.current?.clientWidth || 0;
 
+  const floatingControlsClass = alwaysVisible
+    ? 'fixed bottom-4 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300'
+    : '';
+  
+  const opacityClass = alwaysVisible && !isInteracting
+    ? 'opacity-30 hover:opacity-100'
+    : 'opacity-100';
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
