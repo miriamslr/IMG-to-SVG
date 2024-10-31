@@ -5,6 +5,7 @@ import VectorSlider from './vector-controls/VectorSlider';
 import ColorModeSelector from './vector-controls/ColorModeSelector';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChevronDown } from 'lucide-react';
 
 interface VectorOptions {
   colorMode: ColorMode;
@@ -27,7 +28,7 @@ interface VectorControlsProps {
 
 const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
   return (
-    <Card className="p-6 shadow-lg border-2">
+    <Card className="p-6 shadow-lg border-2 relative">
       <h3 className="text-xl font-semibold mb-6 text-center">Opções de Conversão</h3>
       
       <ScrollArea className="h-[calc(100vh-200px)] pr-4">
@@ -153,6 +154,10 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
           </div>
         </div>
       </ScrollArea>
+      
+      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none flex items-center justify-center">
+        <ChevronDown className="w-6 h-6 text-gray-400 animate-bounce" />
+      </div>
     </Card>
   );
 };
