@@ -13,6 +13,7 @@ interface ImageComparisonProps {
 }
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
+  // Move all hooks to the top level
   const containerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -142,7 +143,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
             style={{
               width: '100%',
-              height: dimensions.height * zoom,
+              height: Math.min(dimensions.height * zoom, 300),
               maxWidth: dimensions.width * zoom
             }}
             onMouseDown={handleMouseDown}
