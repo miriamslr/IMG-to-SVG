@@ -7,10 +7,6 @@ interface ImagePreviewProps {
   dimensions: { width: number; height: number };
   transformStyle: React.CSSProperties;
   containerRef: React.RefObject<HTMLDivElement>;
-  onMouseDown: (e: React.MouseEvent) => void;
-  onMouseMove: (e: React.MouseEvent) => void;
-  onMouseUp: () => void;
-  onMouseLeave: () => void;
 }
 
 export const ImagePreview = ({
@@ -19,11 +15,7 @@ export const ImagePreview = ({
   position,
   dimensions,
   transformStyle,
-  containerRef,
-  onMouseDown,
-  onMouseMove,
-  onMouseUp,
-  onMouseLeave
+  containerRef
 }: ImagePreviewProps) => {
   const getScaleValue = (transform: string | undefined): number => {
     if (!transform) return 1;
@@ -42,10 +34,6 @@ export const ImagePreview = ({
         height: dimensions.height * scale,
         maxWidth: dimensions.width * scale
       }}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseLeave}
     >
       <div className="absolute inset-0" style={transformStyle}>
         <div

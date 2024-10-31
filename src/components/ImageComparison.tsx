@@ -21,13 +21,13 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [alwaysVisible, setAlwaysVisible] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const interactionTimeout = useRef<NodeJS.Timeout>();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const {
     zoom,
     setZoom,
     handleZoomIn,
     handleZoomOut,
-    containerRef
   } = useImageZoom();
 
   useEffect(() => {
@@ -44,23 +44,46 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   }, [originalImage]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX - pan.x,
-      y: e.clientY - pan.y
-    });
+    if (e.ctrlKey && e.button === 2) {
+      e.preventDefault();
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const x = e.clientX - rect.left;
+        const percentage = (x / rect.width) * 100;
+        setPosition(Math.max(0, Math.min(100, percentage)));
+      }
+    } else if (e.button === 0) { // Left click for panning
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - pan.x,
+        y: e.clientY - pan.y
+      });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
+    if (e.ctrlKey && e.buttons === 2) { // Right button
+      e.preventDefault();
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const x = e.clientX - rect.left;
+        const percentage = (x / rect.width) * 100;
+        setPosition(Math.max(0, Math.min(100, percentage)));
+      }
+    } else if (isDragging) { // Left button for panning
+      setPan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent context menu from appearing
   };
 
   const handleInteractionStart = () => {
@@ -116,18 +139,23 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
       <div className="flex justify-center gap-4">
         <div className="flex-1 flex flex-col items-center">
-          <ImagePreview
-            originalImage={originalImage}
-            vectorImage={adjustedVectorImage}
-            position={position}
-            dimensions={dimensions}
-            transformStyle={transformStyle}
-            containerRef={containerRef}
+          <div 
+            ref={containerRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-          />
+            onContextMenu={handleContextMenu}
+          >
+            <ImagePreview
+              originalImage={originalImage}
+              vectorImage={adjustedVectorImage}
+              position={position}
+              dimensions={dimensions}
+              transformStyle={transformStyle}
+              containerRef={containerRef}
+            />
+          </div>
 
           <div className={`${alwaysVisible ? 'hidden' : ''}`}>
             <ZoomControls
