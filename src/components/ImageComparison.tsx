@@ -45,6 +45,24 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     }
   }, [originalImage]);
 
+  // Adiciona suporte ao Ctrl+/Ctrl-
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === '-') {
+          e.preventDefault();
+          handleZoomOut();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleZoomIn, handleZoomOut]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.altKey && e.button === 0) {
       e.preventDefault();
