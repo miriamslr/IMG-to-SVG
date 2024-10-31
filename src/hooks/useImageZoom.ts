@@ -24,14 +24,19 @@ export const useImageZoom = ({
     const handleWheel = (e: WheelEvent) => {
       if (e.ctrlKey) {
         e.preventDefault();
-        const delta = e.deltaY * -0.01;
-        setZoom(prev => Math.min(Math.max(prev + delta, minZoom), maxZoom));
+        e.stopPropagation();
+        
+        const delta = e.deltaY < 0 ? zoomStep : -zoomStep;
+        setZoom(prev => {
+          const newZoom = prev + delta;
+          return Math.min(Math.max(newZoom, minZoom), maxZoom);
+        });
       }
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
-  }, [minZoom, maxZoom]);
+  }, [minZoom, maxZoom, zoomStep]);
 
   return {
     zoom,
