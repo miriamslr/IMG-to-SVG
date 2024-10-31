@@ -35,7 +35,8 @@ const Index = () => {
     lineThreshold: 1,
     cornerThreshold: 90,
     smoothing: 1,
-    optimizePaths: 1
+    optimizePaths: 1,
+    antiAlias: true
   });
 
   const [history, setHistory] = useState<HistoryState[]>([]);

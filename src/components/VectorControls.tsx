@@ -4,6 +4,8 @@ import VectorSlider from './vector-controls/VectorSlider';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronDown } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface VectorOptions {
   quality: number;
@@ -16,6 +18,7 @@ interface VectorOptions {
   cornerThreshold: number;
   smoothing: number;
   optimizePaths: number;
+  antiAlias: boolean;
 }
 
 interface VectorControlsProps {
@@ -32,6 +35,14 @@ const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
         <div className="space-y-6">
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Básicos</h4>
+            <div className="flex items-center space-x-2 mb-4">
+              <Switch
+                id="antiAlias"
+                checked={options.antiAlias}
+                onCheckedChange={(checked) => onOptionsChange({ antiAlias: checked })}
+              />
+              <Label htmlFor="antiAlias">Reduzir Serrilhado</Label>
+            </div>
             <VectorSlider
               label="Qualidade"
               tip="Ajusta a qualidade geral da vetorização"

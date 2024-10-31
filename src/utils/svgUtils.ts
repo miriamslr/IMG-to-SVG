@@ -1,4 +1,4 @@
-export const prepareSvgForDownload = (svgContent: string): string => {
+export const prepareSvgForDownload = (svgContent: string, antiAlias: boolean = true): string => {
   let processedSvg = svgContent;
   
   // Adiciona viewBox se não existir
@@ -20,6 +20,13 @@ export const prepareSvgForDownload = (svgContent: string): string => {
   
   // Garante que todos os elementos tenham um preenchimento definido
   processedSvg = processedSvg.replace(/<(rect|circle|ellipse|polygon|path)(?![^>]*fill=)/g, '<$1 fill="black"');
+  
+  // Adiciona shape-rendering para controlar o anti-aliasing
+  if (antiAlias) {
+    processedSvg = processedSvg.replace(/<svg/, '<svg shape-rendering="geometricPrecision"');
+  } else {
+    processedSvg = processedSvg.replace(/<svg/, '<svg shape-rendering="crispEdges"');
+  }
   
   return processedSvg;
 };
