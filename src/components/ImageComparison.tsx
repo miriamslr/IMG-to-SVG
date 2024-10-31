@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { ZoomControls } from './image-comparison/ZoomControls';
 import { DownloadButtons } from './image-comparison/DownloadButtons';
-import { useZoomHandlers } from './image-comparison/ZoomHandlers';
+import { ImagePreview } from './image-comparison/ImagePreview';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useImageZoom } from '@/hooks/useImageZoom';
 
 interface ImageComparisonProps {
   originalImage: string | null;
@@ -13,7 +14,6 @@ interface ImageComparisonProps {
 
 const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) => {
   const [position, setPosition] = useState(50);
-  const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -21,9 +21,14 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [alwaysVisible, setAlwaysVisible] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const interactionTimeout = useRef<NodeJS.Timeout>();
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  useZoomHandlers({ setZoom, containerRef });
+  const {
+    zoom,
+    setZoom,
+    handleZoomIn,
+    handleZoomOut,
+    containerRef
+  } = useImageZoom();
 
   useEffect(() => {
     if (originalImage) {
@@ -81,12 +86,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
   );
 
-  const scale = containerRef.current
-    ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
-    : 1;
-
   const transformStyle = {
-    transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
+    transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
     transformOrigin: 'top left',
     width: dimensions.width,
     height: dimensions.height
@@ -115,70 +116,25 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
 
       <div className="flex justify-center gap-4">
         <div className="flex-1 flex flex-col items-center">
-          <div
-            ref={containerRef}
-            className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
-            style={{
-              width: '100%',
-              height: dimensions.height * zoom,
-              maxWidth: dimensions.width * zoom
-            }}
+          <ImagePreview
+            originalImage={originalImage}
+            vectorImage={adjustedVectorImage}
+            position={position}
+            dimensions={dimensions}
+            transformStyle={transformStyle}
+            containerRef={containerRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-          >
-            <div
-              className="absolute inset-0"
-              style={transformStyle}
-            >
-              <div
-                style={{
-                  width: dimensions.width,
-                  height: dimensions.height,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0
-                }}
-                dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
-              />
-            </div>
-
-            <div
-              className="absolute inset-0"
-              style={{
-                clipPath: `inset(0 ${100 - position}% 0 0)`,
-                transition: 'clip-path 0.1s ease-out',
-                ...transformStyle
-              }}
-            >
-              <img
-                src={originalImage}
-                alt="Original"
-                style={{
-                  width: dimensions.width,
-                  height: dimensions.height,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0
-                }}
-              />
-            </div>
-
-            <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-              Vetorizado
-            </div>
-            <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-              Original
-            </div>
-          </div>
+          />
 
           <div className={`${alwaysVisible ? 'hidden' : ''}`}>
             <ZoomControls
               zoom={zoom}
               onZoomChange={setZoom}
-              onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 3))}
-              onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.1))}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
             />
           </div>
         </div>
@@ -208,8 +164,8 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             <ZoomControls
               zoom={zoom}
               onZoomChange={setZoom}
-              onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 3))}
-              onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.1))}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
             />
             <Slider
               value={[position]}
