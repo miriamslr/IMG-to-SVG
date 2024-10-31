@@ -1,22 +1,19 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-import { ColorMode } from '@/types/vector';
 import { toast } from '@/components/ui/use-toast';
 
 interface VectorPreviewProps {
   svgContent: string;
   recognizedText: string[];
   detectedFonts: string[];
-  colorMode: ColorMode;
   originalImage?: string;
 }
 
 const VectorPreview = ({ 
   svgContent, 
   recognizedText, 
-  detectedFonts, 
-  colorMode,
+  detectedFonts,
   originalImage 
 }: VectorPreviewProps) => {
   const handleDownload = async (format: 'svg' | 'pdf' | 'ai' | 'cdr') => {
@@ -27,10 +24,9 @@ const VectorPreview = ({
       switch (format) {
         case 'svg':
           blob = new Blob([svgContent], { type: 'image/svg+xml' });
-          filename = `vector-${colorMode}.svg`;
+          filename = `vector.svg`;
           break;
         case 'pdf':
-          // Nota: Em um ambiente real, isso seria feito no servidor
           toast({
             title: "Formato não suportado",
             description: "A conversão para PDF requer processamento no servidor.",
@@ -88,7 +84,7 @@ const VectorPreview = ({
             )}
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-2">Resultado Vetorial ({colorMode})</h3>
+            <h3 className="text-lg font-semibold mb-2">Resultado Vetorial</h3>
             <div 
               className="border rounded-lg p-4 bg-gray-50 h-[400px] flex items-center justify-center" 
               dangerouslySetInnerHTML={{ __html: svgContent }} 
