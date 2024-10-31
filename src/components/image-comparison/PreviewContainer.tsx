@@ -16,9 +16,9 @@ export const PreviewContainer = ({ dimensions, zoom, children }: PreviewContaine
     <div 
       className="relative border rounded-lg overflow-hidden bg-white cursor-grab active:cursor-grabbing mb-4 mx-auto"
       style={{
-        width: baseWidth * zoom,
+        width: '100%',
         height: baseHeight * zoom,
-        maxWidth: '100%'
+        maxWidth: baseWidth * zoom
       }}
     >
       {children}
