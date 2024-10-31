@@ -26,23 +26,22 @@ const Index = () => {
   } | null>(null);
   
   const [options, setOptions] = useState({
-    quality: 1, // Mantido em 1 para máxima qualidade
-    turdSize: 1, // Reduzido para capturar detalhes menores
-    alphaMax: 0.5, // Ajustado para melhor equilíbrio entre suavidade e precisão
-    threshold: 128, // Mantido como ponto médio para bom contraste
-    optTolerance: 0.1, // Reduzido para maior precisão nas curvas
-    pathomit: 4, // Reduzido para manter mais detalhes
-    lineThreshold: 0.5, // Ajustado para melhor detecção de linhas
-    cornerThreshold: 60, // Ajustado para melhor detecção de cantos
-    smoothing: 0.8, // Ajustado para suavidade sem perder detalhes
-    optimizePaths: 0.8, // Ajustado para otimização sem perda de qualidade
-    antiAlias: true // Mantido para bordas suaves
+    quality: 1,
+    turdSize: 0.5, // Reduzido para capturar detalhes ainda menores
+    alphaMax: 0.3, // Reduzido para curvas mais precisas
+    threshold: 128,
+    optTolerance: 0.05, // Reduzido para maior precisão nas curvas
+    pathomit: 2, // Reduzido para manter mais detalhes
+    lineThreshold: 0.3, // Ajustado para melhor detecção de linhas
+    cornerThreshold: 45, // Ajustado para melhor detecção de cantos
+    smoothing: 0.65, // Ajustado para suavidade sem perder detalhes
+    optimizePaths: 0.9, // Aumentado para melhor otimização
+    antiAlias: true
   });
 
   const [history, setHistory] = useState<HistoryState[]>([]);
   const { toast } = useToast();
 
-  // Adiciona suporte ao Ctrl+Z
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -98,7 +97,6 @@ const Index = () => {
             Math.random() > 0.5
           );
 
-          // Salva o estado atual no histórico antes de atualizar
           if (vectorResult) {
             setHistory(prev => [...prev, { options: { ...options }, vectorResult: { ...vectorResult } }]);
           }
@@ -123,7 +121,6 @@ const Index = () => {
   };
 
   const updateOptionsAndProcess = (newOptions: Partial<typeof options>) => {
-    // Salva o estado atual no histórico antes de atualizar
     setHistory(prev => [...prev, { options: { ...options }, vectorResult: { ...vectorResult } }]);
     setOptions(prev => ({ ...prev, ...newOptions }));
     processImage();
@@ -150,15 +147,15 @@ const Index = () => {
     setHistory([]);
     setOptions({
       quality: 1,
-      turdSize: 1,
-      alphaMax: 0.5,
+      turdSize: 0.5,
+      alphaMax: 0.3,
       threshold: 128,
-      optTolerance: 0.1,
-      pathomit: 4,
-      lineThreshold: 0.5,
-      cornerThreshold: 60,
-      smoothing: 0.8,
-      optimizePaths: 0.8,
+      optTolerance: 0.05,
+      pathomit: 2,
+      lineThreshold: 0.3,
+      cornerThreshold: 45,
+      smoothing: 0.65,
+      optimizePaths: 0.9,
       antiAlias: true
     });
   };
