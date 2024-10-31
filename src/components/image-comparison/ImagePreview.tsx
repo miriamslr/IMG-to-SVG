@@ -15,14 +15,22 @@ export const ImagePreview = ({
   dimensions,
   transformStyle,
 }: ImagePreviewProps) => {
+  // Processa o SVG para garantir dimensões e visualização corretas
+  const processedSvg = vectorImage
+    .replace(/<svg/, `<svg width="100%" height="100%" viewBox="0 0 ${dimensions.width} ${dimensions.height}"`)
+    .replace(/style="([^"]*)"/, (match, style) => `style="${style};background:white"`);
+
   return (
     <>
       {vectorImage && (
-        <div className="absolute inset-0 bg-white" style={transformStyle}>
+        <div 
+          className="absolute inset-0 bg-white overflow-hidden" 
+          style={transformStyle}
+        >
           <div
             className="w-full h-full"
             dangerouslySetInnerHTML={{ 
-              __html: vectorImage
+              __html: processedSvg
             }}
           />
         </div>
@@ -30,7 +38,7 @@ export const ImagePreview = ({
 
       {originalImage && (
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 overflow-hidden"
           style={{
             clipPath: `inset(0 ${100 - position}% 0 0)`,
             transition: 'clip-path 0.1s ease-out',
@@ -41,6 +49,7 @@ export const ImagePreview = ({
             src={originalImage}
             alt="Original"
             className="w-full h-full object-contain"
+            style={{ maxWidth: '100%', maxHeight: '100%' }}
           />
         </div>
       )}
