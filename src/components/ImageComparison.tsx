@@ -10,13 +10,15 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [position, setPosition] = useState(50);
   const [zoom, setZoom] = useState(1);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
-        const containerWidth = containerRef.current?.clientWidth || 800;
         setDimensions({
           width: img.naturalWidth,
           height: img.naturalHeight
@@ -37,22 +39,47 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
     ? Math.min(1, containerRef.current.clientWidth / dimensions.width) * zoom
     : 1;
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - pan.x,
+      y: e.clientY - pan.y
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    setPan({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-4">
         <div 
           ref={containerRef}
-          className="relative border rounded-lg overflow-hidden bg-white flex-grow"
+          className="relative border rounded-lg overflow-hidden bg-white flex-grow cursor-grab active:cursor-grabbing"
           style={{
             width: '100%',
             height: dimensions.height * scale,
             maxWidth: dimensions.width * zoom
           }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
           <div 
             className="absolute inset-0"
             style={{ 
-              transform: `scale(${scale})`,
+              transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
               transformOrigin: 'top left'
             }}
           >
@@ -70,7 +97,7 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
             style={{
               clipPath: `inset(0 ${100 - position}% 0 0)`,
               transition: 'clip-path 0.1s ease-out',
-              transform: `scale(${scale})`,
+              transform: `scale(${scale}) translate(${pan.x / scale}px, ${pan.y / scale}px)`,
               transformOrigin: 'top left'
             }}
           >
