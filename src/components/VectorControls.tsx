@@ -1,12 +1,13 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
+import { ColorMode } from '@/types/vector';
 import VectorSlider from './vector-controls/VectorSlider';
+import ColorModeSelector from './vector-controls/ColorModeSelector';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronDown } from 'lucide-react';
-import DownloadButtons from './vector-controls/DownloadButtons';
 
 interface VectorOptions {
+  colorMode: ColorMode;
   quality: number;
   turdSize: number;
   alphaMax: number;
@@ -22,26 +23,22 @@ interface VectorOptions {
 interface VectorControlsProps {
   options: VectorOptions;
   onOptionsChange: (newOptions: Partial<VectorOptions>) => void;
-  isProcessing: boolean;
-  vectorSvg?: string;
 }
 
-const VectorControls = ({ options, onOptionsChange, isProcessing, vectorSvg }: VectorControlsProps) => {
+const VectorControls = ({ options, onOptionsChange }: VectorControlsProps) => {
   return (
-    <Card className="p-4 shadow-lg border-2 h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
-      <h3 className="text-xl font-semibold mb-4 text-center px-2">Opções de Conversão</h3>
+    <Card className="p-6 shadow-lg border-2">
+      <h3 className="text-xl font-semibold mb-6 text-center">Opções de Conversão</h3>
       
-      {vectorSvg && (
-        <>
-          <div className="px-2">
-            <DownloadButtons vectorSvg={vectorSvg} />
-          </div>
-          <Separator className="my-4" />
-        </>
-      )}
+      <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+        <ColorModeSelector
+          value={options.colorMode}
+          onChange={(value) => onOptionsChange({ colorMode: value })}
+        />
 
-      <ScrollArea className="flex-1 w-full pr-4">
-        <div className="space-y-6 px-2">
+        <Separator className="my-6" />
+        
+        <div className="space-y-6">
           <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Básicos</h4>
             <VectorSlider
@@ -102,7 +99,7 @@ const VectorControls = ({ options, onOptionsChange, isProcessing, vectorSvg }: V
 
           <Separator />
 
-          <div className="pb-4">
+          <div>
             <h4 className="text-sm font-medium text-muted-foreground mb-4">Ajustes Avançados</h4>
             <VectorSlider
               label="Tamanho Mínimo"

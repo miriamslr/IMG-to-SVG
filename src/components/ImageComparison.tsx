@@ -10,15 +10,15 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   const [position, setPosition] = useState(50);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
   
   useEffect(() => {
     if (originalImage) {
       const img = new Image();
       img.onload = () => {
+        const containerWidth = containerRef.current?.clientWidth || 800;
         setDimensions({
-          width: img.width,
-          height: img.height
+          width: img.naturalWidth,
+          height: img.naturalHeight
         });
       };
       img.src = originalImage;
@@ -27,80 +27,70 @@ const ImageComparison = ({ originalImage, vectorImage }: ImageComparisonProps) =
   
   if (!originalImage) return null;
 
-  // Ajusta o SVG para usar as dimensões exatas do arquivo original
   const adjustedVectorImage = vectorImage.replace(
     /<svg[^>]*>/,
-    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}">`
+    `<svg width="${dimensions.width}" height="${dimensions.height}" viewBox="0 0 ${dimensions.width} ${dimensions.height}" preserveAspectRatio="none">`
   );
 
-  const containerWidth = containerRef.current?.clientWidth || 0;
-  const containerHeight = containerRef.current?.clientHeight || 0;
-  const scale = Math.min(
-    (containerWidth - 32) / dimensions.width,
-    (containerHeight - 32) / dimensions.height,
-    1
-  );
+  const scale = containerRef.current 
+    ? Math.min(1, containerRef.current.clientWidth / dimensions.width)
+    : 1;
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
+    <div className="space-y-4">
       <div 
-        ref={containerRef} 
-        className="relative flex-1 min-h-0 bg-[url('/grid.png')]"
+        ref={containerRef}
+        className="relative border rounded-lg overflow-hidden bg-white mx-auto"
+        style={{
+          width: '100%',
+          height: dimensions.height * scale,
+          maxWidth: dimensions.width
+        }}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div 
+          className="absolute inset-0"
+          style={{ 
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left'
+          }}
+        >
           <div 
-            style={{
-              width: dimensions.width * scale,
-              height: dimensions.height * scale,
-              position: 'relative'
+            style={{ 
+              width: dimensions.width,
+              height: dimensions.height
             }}
-          >
-            {/* SVG Container */}
-            <div 
-              style={{ 
-                width: '100%',
-                height: '100%',
-                position: 'absolute',
-                top: 0,
-                left: 0
-              }}
-              dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
-            />
-            
-            {/* Original Image Container */}
-            <div 
-              style={{
-                width: '100%',
-                height: '100%',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                clipPath: `inset(0 ${100 - position}% 0 0)`
-              }}
-            >
-              <img 
-                ref={imageRef}
-                src={originalImage} 
-                alt="Original"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'fill'
-                }}
-              />
-            </div>
-          </div>
+            dangerouslySetInnerHTML={{ __html: adjustedVectorImage }}
+          />
+        </div>
+        
+        <div 
+          className="absolute inset-0"
+          style={{
+            clipPath: `inset(0 ${100 - position}% 0 0)`,
+            transition: 'clip-path 0.1s ease-out',
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left'
+          }}
+        >
+          <img 
+            src={originalImage} 
+            alt="Original"
+            style={{
+              width: dimensions.width,
+              height: dimensions.height
+            }}
+          />
         </div>
 
         <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-          Original
+          Vetorizado
         </div>
         <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 text-xs rounded">
-          Vetorizado
+          Original
         </div>
       </div>
 
-      <div className="h-[60px] px-4 w-full max-w-md mx-auto flex items-center">
+      <div className="px-4 w-full max-w-md mx-auto">
         <Slider
           value={[position]}
           onValueChange={([value]) => setPosition(value)}

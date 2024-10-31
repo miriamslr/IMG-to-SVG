@@ -4,50 +4,52 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import ImageAdjustmentsPanel from './recognition-results/ImageAdjustmentsPanel';
-import VectorAdjustmentsPanel from './recognition-results/VectorAdjustmentsPanel';
-import EffectsPanel from './recognition-results/EffectsPanel';
-import RecognitionPanel from './recognition-results/RecognitionPanel';
-import { ImageAdjustments } from '@/utils/imageAdjustments';
 
 interface RecognitionResultsProps {
   recognizedText: string[];
   detectedFonts: string[];
-  onAdjustmentsChange?: (adjustments: ImageAdjustments) => void;
 }
 
-const RecognitionResults = ({ 
-  recognizedText, 
-  detectedFonts,
-  onAdjustmentsChange 
-}: RecognitionResultsProps) => {
+const RecognitionResults = ({ recognizedText, detectedFonts }: RecognitionResultsProps) => {
   return (
-    <div className="space-y-4">
-      <Collapsible>
-        <CollapsibleTrigger className="flex items-center gap-2 w-full p-4 hover:bg-accent rounded-lg">
-          <span className="font-semibold">Opções Avançadas de Personalização</span>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <Alert className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Ajuste os parâmetros para otimizar o resultado da vetorização
-            </AlertDescription>
-          </Alert>
+    <Collapsible>
+      <CollapsibleTrigger className="flex items-center gap-2 w-full p-4 hover:bg-accent rounded-lg">
+        <span className="font-semibold">Reconhecimento de Texto e Fontes</span>
+        <Badge variant="secondary" className="ml-2">Beta</Badge>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <Alert className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Esta funcionalidade está em desenvolvimento. Os resultados podem não ser precisos.
+          </AlertDescription>
+        </Alert>
+        
+        {recognizedText.length > 0 && (
+          <Card className="p-4 mb-4">
+            <h3 className="text-lg font-semibold mb-2">Texto Reconhecido</h3>
+            <div className="space-y-2">
+              {recognizedText.map((text, index) => (
+                <p key={index} className="text-gray-700">{text}</p>
+              ))}
+            </div>
+          </Card>
+        )}
 
-          <div className="space-y-4">
-            <ImageAdjustmentsPanel onAdjustmentsChange={onAdjustmentsChange} />
-            <VectorAdjustmentsPanel onAdjustmentsChange={onAdjustmentsChange} />
-            <EffectsPanel onAdjustmentsChange={onAdjustmentsChange} />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      <RecognitionPanel 
-        recognizedText={recognizedText}
-        detectedFonts={detectedFonts}
-      />
-    </div>
+        {detectedFonts.length > 0 && (
+          <Card className="p-4">
+            <h3 className="text-lg font-semibold mb-2">Fontes Detectadas</h3>
+            <div className="flex flex-wrap gap-2">
+              {detectedFonts.map((font, index) => (
+                <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                  {font}
+                </span>
+              ))}
+            </div>
+          </Card>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
