@@ -7,7 +7,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle, Undo2, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import * as Tesseract from 'tesseract.js';
+import { recognizeText } from '@/utils/textRecognition';
+import { detectFonts } from '@/utils/fontDetection';
 import * as potrace from 'potrace';
 
 interface HistoryState {
@@ -22,20 +23,20 @@ const Index = () => {
   const [vectorResult, setVectorResult] = useState<{
     svg: string;
     text: string[];
-    fonts: string[];
+    fonts: { name: string; confidence: number; }[];
   } | null>(null);
   
   const [options, setOptions] = useState({
     quality: 1,
-    turdSize: 0.5, // Reduzido para capturar detalhes ainda menores
-    alphaMax: 0.3, // Reduzido para curvas mais precisas
+    turdSize: 0.5,
+    alphaMax: 0.3,
     threshold: 128,
-    optTolerance: 0.05, // Reduzido para maior precisão nas curvas
-    pathomit: 2, // Reduzido para manter mais detalhes
-    lineThreshold: 0.3, // Ajustado para melhor detecção de linhas
-    cornerThreshold: 45, // Ajustado para melhor detecção de cantos
-    smoothing: 0.65, // Ajustado para suavidade sem perder detalhes
-    optimizePaths: 0.9, // Aumentado para melhor otimização
+    optTolerance: 0.05,
+    pathomit: 2,
+    lineThreshold: 0.3,
+    cornerThreshold: 45,
+    smoothing: 0.65,
+    optimizePaths: 0.9,
     antiAlias: true
   });
 
@@ -53,30 +54,17 @@ const Index = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [history]);
 
-  const handleImageSelect = async (file: File) => {
-    setSelectedImage(file);
-    
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-      processImage(file);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const processImage = async (file: File | null = selectedImage) => {
     if (!file) return;
 
     setProcessing(true);
     
     try {
-      const worker = await Tesseract.createWorker('por');
-      const result = await worker.recognize(file);
-      await worker.terminate();
-
-      const recognizedText = result.data.paragraphs
-        .map(p => p.text.trim())
-        .filter(text => text.length > 0);
+      // Perform text recognition and font detection in parallel
+      const [textResult, fontMatches] = await Promise.all([
+        recognizeText(file),
+        detectFonts(file)
+      ]);
 
       const reader = new FileReader();
       reader.onload = () => {
@@ -92,10 +80,6 @@ const Index = () => {
 
         potrace.trace(reader.result as string, params, (err: Error | null, svg: string) => {
           if (err) throw err;
-          
-          const detectedFonts = ['Arial', 'Helvetica', 'Times New Roman'].filter(() => 
-            Math.random() > 0.5
-          );
 
           if (vectorResult) {
             setHistory(prev => [...prev, { options: { ...options }, vectorResult: { ...vectorResult } }]);
@@ -103,9 +87,16 @@ const Index = () => {
           
           setVectorResult({
             svg,
-            text: recognizedText,
-            fonts: detectedFonts
+            text: textResult.text,
+            fonts: fontMatches
           });
+
+          if (textResult.confidence > 90) {
+            toast({
+              title: "Texto reconhecido com alta confiança",
+              description: `${textResult.text.length} elementos de texto identificados.`
+            });
+          }
         });
       };
       reader.readAsDataURL(file);
